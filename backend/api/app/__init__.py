@@ -11,8 +11,10 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['ATTENDANCE_SECRET_SEED'] = os.getenv('ATTENDANCE_SECRET_SEED', 'default-secret-seed-change-in-production')
 
-    db.init_app(app)
+    # Enable CORS for all routes
     CORS(app)
+
+    db.init_app(app)
 
     from .routes import main
     app.register_blueprint(main)
