@@ -1,9 +1,10 @@
+import { BottomFade, useBottomFade } from "@/components/bottom-fade";
 import { RadialProgress } from "@/components/radial-progress";
 import { Colors } from "@/constants/theme";
 import rawData from "@/data/attendance-data.json";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import React, { useMemo, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Animated, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Lecture {
@@ -70,6 +71,51 @@ function calculateStreak(data: Record<string, DayData>): number {
   return streak;
 }
 
+function calculateBestStreak(data: Record<string, DayData>): number {
+  const dates = Object.keys(data).sort();
+  let best = 0;
+  let current = 0;
+
+  for (const date of dates) {
+    const hasAttended = data[date].lectures.some((l) => l.attended);
+    if (hasAttended) {
+      current++;
+      best = Math.max(best, current);
+    } else {
+      current = 0;
+    }
+  }
+
+  return best;
+}
+
+function calculateOverallRate(data: Record<string, DayData>): number {
+  let attended = 0;
+  let total = 0;
+
+  for (const date of Object.keys(data)) {
+    for (const lecture of data[date].lectures) {
+      total++;
+      if (lecture.attended) attended++;
+    }
+  }
+
+  return total > 0 ? Math.round((attended / total) * 100) : 0;
+}
+
+function calculatePerfectDays(data: Record<string, DayData>): number {
+  let count = 0;
+
+  for (const date of Object.keys(data)) {
+    const lectures = data[date].lectures;
+    if (lectures.length > 0 && lectures.every((l) => l.attended)) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
 function getCalendarGrid(year: number, month: number): (number | null)[][] {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayOfWeek = new Date(year, month, 1).getDay();
@@ -107,7 +153,30 @@ export default function StreaksScreen() {
   const colors = Colors[colorScheme];
 
   const streak = useMemo(() => calculateStreak(attendanceData), []);
+  const bestStreak = useMemo(() => calculateBestStreak(attendanceData), []);
+  const overallRate = useMemo(() => calculateOverallRate(attendanceData), []);
+  const perfectDays = useMemo(() => calculatePerfectDays(attendanceData), []);
   const weeks = useMemo(() => getCalendarGrid(currentYear, currentMonth), [currentYear, currentMonth]);
+
+  // Animated entrance for streak card
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 60,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const selectedDayData = attendanceData[selectedDate]?.lectures || [];
   const todayStr = formatDateKey(today.getFullYear(), today.getMonth(), today.getDate());
@@ -138,29 +207,177 @@ export default function StreaksScreen() {
     return "#F44336";
   };
 
+  const { opacity: fadeOpacity, onScroll: onFadeScroll } = useBottomFade();
+
   return (
     <View className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
       <SafeAreaView className="flex-1" edges={["top"]}>
-        <ScrollView className="flex-1" contentContainerClassName="p-5 pb-10" showsVerticalScrollIndicator={false}>
+        <ScrollView className="flex-1" contentContainerClassName="p-5 pb-10" showsVerticalScrollIndicator={false} onScroll={onFadeScroll} scrollEventThrottle={16}>
           {/* Header */}
-          <Text className={`text-[32px] font-bold mb-5 ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}>
+          <Text className={`text-[32px] font-bold mb-5 ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
             Attendance
           </Text>
+
+          {/* Streak Counter */}
+          <Animated.View
+            style={{
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            }}
+          >
+            <View
+              className="rounded-2xl mb-4 overflow-hidden shadow-sm"
+              style={{
+                backgroundColor: isDark ? "#1C1C1E" : "#fff",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: isDark ? 0 : 0.08,
+                shadowRadius: 12,
+              }}
+            >
+              {/* Main streak display */}
+              <View className="p-5 items-center">
+                <Text
+                  className="font-extrabold"
+                  style={{
+                    fontSize: 56,
+                    lineHeight: 64,
+                    color: isDark ? "#ECEDEE" : "#374151",
+                  }}
+                >
+                  {streak}
+                </Text>
+
+                <Text
+                  className="font-semibold uppercase tracking-[3px]"
+                  style={{
+                    fontSize: 13,
+                    color: isDark ? "rgba(236,237,238,0.5)" : "rgba(55,65,81,0.4)",
+                    marginTop: 2,
+                  }}
+                >
+                  {streak === 1 ? "day streak" : "day streak"}
+                </Text>
+
+                {streak >= bestStreak && streak > 0 && (
+                  <View
+                    className="mt-3 rounded-full px-3 py-1"
+                    style={{
+                      backgroundColor: isDark ? "rgba(255,107,53,0.15)" : "rgba(255,107,53,0.1)",
+                    }}
+                  >
+                    <Text className="text-xs font-bold" style={{ color: "#FF6B35" }}>
+                      🏆 Personal Best!
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Divider */}
+              <View
+                style={{
+                  height: 1,
+                  marginHorizontal: 20,
+                  backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+                }}
+              />
+
+              {/* Stats row */}
+              <View className="flex-row py-4 px-2">
+                <View className="flex-1 items-center">
+                  <Text
+                    className="font-bold"
+                    style={{
+                      fontSize: 22,
+                      color: isDark ? "#ECEDEE" : "#374151",
+                    }}
+                  >
+                    {bestStreak}
+                  </Text>
+                  <Text
+                    className="font-medium mt-0.5"
+                    style={{
+                      fontSize: 11,
+                      color: isDark ? "rgba(236,237,238,0.4)" : "rgba(55,65,81,0.35)",
+                    }}
+                  >
+                    Best Streak
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    width: 1,
+                    backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+                  }}
+                />
+
+                <View className="flex-1 items-center">
+                  <Text
+                    className="font-bold"
+                    style={{
+                      fontSize: 22,
+                      color: isDark ? "#ECEDEE" : "#374151",
+                    }}
+                  >
+                    {overallRate}%
+                  </Text>
+                  <Text
+                    className="font-medium mt-0.5"
+                    style={{
+                      fontSize: 11,
+                      color: isDark ? "rgba(236,237,238,0.4)" : "rgba(55,65,81,0.35)",
+                    }}
+                  >
+                    Attendance
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    width: 1,
+                    backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+                  }}
+                />
+
+                <View className="flex-1 items-center">
+                  <Text
+                    className="font-bold"
+                    style={{
+                      fontSize: 22,
+                      color: isDark ? "#ECEDEE" : "#374151",
+                    }}
+                  >
+                    {perfectDays}
+                  </Text>
+                  <Text
+                    className="font-medium mt-0.5"
+                    style={{
+                      fontSize: 11,
+                      color: isDark ? "rgba(236,237,238,0.4)" : "rgba(55,65,81,0.35)",
+                    }}
+                  >
+                    Perfect Days
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </Animated.View>
 
           {/* Calendar Card */}
           <View className={`rounded-2xl p-4 mb-4 shadow-sm ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-black/10"}`}>
             {/* Month Navigation */}
             <View className="flex-row justify-between items-center mb-4">
               <TouchableOpacity onPress={goToPrevMonth} className="w-9 h-9 justify-center items-center">
-                <Text className={`text-[28px] font-light leading-8 ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}>
+                <Text className={`text-[28px] font-light leading-8 ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
                   ‹
                 </Text>
               </TouchableOpacity>
-              <Text className={`text-[17px] font-semibold ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}>
+              <Text className={`text-[17px] font-semibold ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
                 {MONTHS[currentMonth]} {currentYear}
               </Text>
               <TouchableOpacity onPress={goToNextMonth} className="w-9 h-9 justify-center items-center">
-                <Text className={`text-[28px] font-light leading-8 ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}>
+                <Text className={`text-[28px] font-light leading-8 ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
                   ›
                 </Text>
               </TouchableOpacity>
@@ -240,7 +457,7 @@ export default function StreaksScreen() {
                                   ? colors.tint
                                   : isDark
                                     ? "#fff"
-                                    : "#1C1C1E",
+                                    : "#374151",
                             }}
                           >
                             {day}
@@ -265,24 +482,9 @@ export default function StreaksScreen() {
             ))}
           </View>
 
-          {/* Streak Counter */}
-          <View
-            className={`rounded-2xl p-5 flex-row items-center mb-6 shadow-sm ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-black/10"}`}
-          >
-            <Text className="text-[40px] mr-4">🔥</Text>
-            <View className="flex-row items-baseline gap-2">
-              <Text className={`text-[40px] font-extrabold ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}>
-                {streak}
-              </Text>
-              <Text className={`text-lg font-medium ${isDark ? "text-[#ECEDEE]/60" : "text-[#11181C]/60"}`}>
-                day streak
-              </Text>
-            </View>
-          </View>
-
           {/* Lectures for Selected Day */}
           <View className="gap-3">
-            <Text className={`text-xl font-bold mb-1 ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}>
+            <Text className={`text-xl font-bold mb-1 ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
               {formatDisplayDate(selectedDate)}
             </Text>
 
@@ -296,13 +498,13 @@ export default function StreaksScreen() {
                   }}
                 >
                   <View className="mr-4 items-center w-12">
-                    <Text className={`text-[15px] font-semibold ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}>
+                    <Text className={`text-[15px] font-semibold ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
                       {lecture.time}
                     </Text>
                     <Text className="text-xs mt-0.5 text-[#8E8E93]">{lecture.endTime}</Text>
                   </View>
                   <View className="flex-1">
-                    <Text className={`text-[15px] font-semibold mb-1 ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}>
+                    <Text className={`text-[15px] font-semibold mb-1 ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
                       {lecture.name}
                     </Text>
                     <Text className="text-[13px] text-[#8E8E93]">📍 {lecture.room}</Text>
@@ -326,13 +528,14 @@ export default function StreaksScreen() {
               ))
             ) : (
               <View className={`rounded-xl p-8 items-center ${isDark ? "bg-[#1C1C1E]" : "bg-white"}`}>
-                <Text className={`text-[15px] ${isDark ? "text-[#ECEDEE]/40" : "text-[#11181C]/40"}`}>
+                <Text className={`text-[15px] ${isDark ? "text-[#ECEDEE]/40" : "text-[#374151]/40"}`}>
                   No lectures scheduled
                 </Text>
               </View>
             )}
           </View>
         </ScrollView>
+        <BottomFade opacity={fadeOpacity} />
       </SafeAreaView>
     </View>
   );

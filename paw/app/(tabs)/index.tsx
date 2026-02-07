@@ -160,11 +160,11 @@ export default function AttendScreen() {
         className="flex-1 justify-center items-center px-6"
       >
         <View className="items-center mb-12">
-          <Text className={`text-[32px] font-bold mb-2 text-center ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}>
+          <Text className={`text-[32px] font-bold mb-2 text-center ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
             Mark Attendance
           </Text>
           <Text
-            className={`text-base text-center leading-[22px] ${isDark ? "text-[#ECEDEE]/50" : "text-[#11181C]/50"}`}
+            className={`text-base text-center leading-[22px] ${isDark ? "text-[#ECEDEE]/50" : "text-[#374151]/50"}`}
           >
             Enter the 4-digit code shown in your lecture
           </Text>
@@ -199,7 +199,7 @@ export default function AttendScreen() {
               }}
             >
               <Text
-                className={`text-4xl font-bold ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}
+                className={`text-4xl font-bold ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}
                 style={submitted ? { color: isError ? "#F44336" : "#4CAF50" } : undefined}
               >
                 {code[i] || ""}

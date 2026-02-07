@@ -1,3 +1,4 @@
+import { BottomFade, useBottomFade } from "@/components/bottom-fade";
 import { Colors, LeedsRed } from "@/constants/theme";
 import rawData from "@/data/leaderboard-data.json";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -130,10 +131,12 @@ export default function LeaderboardScreen() {
     [displayItems],
   );
 
+  const { opacity: fadeOpacity, onScroll: onFadeScroll } = useBottomFade();
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.surfaceBg }}>
       <SafeAreaView className="flex-1" edges={["top"]}>
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false} onScroll={onFadeScroll} scrollEventThrottle={16}>
           {/* Header */}
           <View className="px-5 pt-5 pb-2">
             <Text style={{ fontSize: 32, fontWeight: "bold", marginBottom: 4, color: colors.text }}>Leaderboard</Text>
@@ -263,6 +266,7 @@ export default function LeaderboardScreen() {
           {/* Bottom padding when user is in top 10 */}
           {!currentUserItem && <View className="h-10" />}
         </ScrollView>
+        <BottomFade opacity={fadeOpacity} />
       </SafeAreaView>
     </View>
   );
