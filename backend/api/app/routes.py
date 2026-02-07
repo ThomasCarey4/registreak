@@ -39,19 +39,27 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorated
 
+# Helper to extract student_id from current request's JWT
+def get_student_id():
+    """Get student_id from the current request's authenticated user. Returns None if not authenticated."""
+    if hasattr(request, 'user'):
+        return request.user.get('student_id')
+    return None
+
 @main.route('/')
 def home():
     return jsonify(message="Hello, Flask + SQLAlchemy!")
 
-@main.route('/code/<lecturer_id>', methods=['GET'])
+@main.route('/code', methods=['GET'])
 @token_required
-def get_code(lecturer_id):
+def get_code():
     """
     Send code to front end via websockets every 30 seconds
     Returns a verification code for attendance checking
     Requires authentication.
     """
     try:
+        lecturer_id = get_student_id()
         code_value = get_lecturer_current_lectures(lecturer_id)
         return jsonify({"code": code_value}), 200
     except Exception as e:
