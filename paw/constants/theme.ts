@@ -1,29 +1,130 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * University of Leeds Design System colours
+ * https://designsystem.leeds.ac.uk/docs/colours.html
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// ── Brand Reds ──
+export const LeedsRed = {
+  dark: '#910000',
+  base: '#c70000',
+  bright: '#ff4e36',
+  pastel: '#ff8a7a',
+  faded: '#ffeded',
+} as const;
 
+// ── Brand Greens / Teal ──
+export const LeedsGreen = {
+  dark: '#156265',
+  bright: '#026E7A',
+  light: '#ABC6C7',
+} as const;
+
+// ── New Brand Teal ──
+export const LeedsTeal = {
+  base: '#00D0A0',
+  dark: '#00A881',
+} as const;
+
+// ── Tertiary Blues ──
+export const LeedsBlue = {
+  dark: '#00323d',
+  base: '#003a52',
+  bright: '#1a84c7',
+} as const;
+
+// ── Blacks ──
+export const LeedsBlack = {
+  dark: '#0a0202',
+  base: '#212121',
+  light: '#6e6b6b',
+  faded: '#dedede',
+} as const;
+
+// ── Cool Greys ──
+export const LeedsGrey = {
+  dark: '#6a645d',
+  medium: '#bcb8b3',
+  base: '#ddd9d5',
+  light: '#eae8e6',
+  faded: '#f3f2f1',
+} as const;
+
+// ── Warm Greys ──
+export const LeedsWarmGrey = {
+  dark: '#5f5754',
+  medium: '#81746e',
+  base: '#b7aaa4',
+  light: '#cac2ba',
+  faded: '#efeae6',
+} as const;
+
+// ── Creams ──
+export const LeedsCream = {
+  dark: '#ddcfc0',
+  medium: '#e9e1d8',
+  base: '#f6eee5',
+  light: '#faf6f1',
+} as const;
+
+// ── Whites ──
+export const LeedsWhite = {
+  dark: '#fffbf5',
+  base: '#ffffff',
+} as const;
+
+// ── Text ──
+export const LeedsFont = {
+  dark: '#0e0c0c',
+  base: '#212529',
+  light: '#3B3B3B',
+  xLight: '#636363',
+} as const;
+
+// ── Borders ──
+export const LeedsBorder = {
+  light: '#c9c8c5',
+  base: '#51504c',
+} as const;
+
+// ── Alerts ──
+export const LeedsAlert = {
+  error: '#d4351c',
+  warning: '#e76f16',
+  success: '#3a9018',
+  info: '#1993bd',
+} as const;
+
+// ── App theme (monochromatic, mapped from Leeds palette) ──
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: LeedsFont.base,
+    background: LeedsWhite.base,
+    tint: LeedsFont.light,
+    icon: LeedsFont.xLight,
+    tabIconDefault: LeedsGrey.medium,
+    tabIconSelected: LeedsFont.light,
+    card: LeedsWhite.base,
+    cardHighlight: LeedsGrey.faded,
+    subtleText: LeedsFont.xLight,
+    rankText: LeedsGrey.medium,
+    divider: LeedsBorder.light,
+    surfaceBg: LeedsGrey.faded,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: LeedsGrey.faded,
+    background: LeedsBlack.dark,
+    tint: LeedsGrey.light,
+    icon: LeedsGrey.dark,
+    tabIconDefault: LeedsGrey.dark,
+    tabIconSelected: LeedsGrey.light,
+    card: LeedsBlack.base,
+    cardHighlight: '#2a2a2a',
+    subtleText: LeedsBlack.light,
+    rankText: LeedsBlack.light,
+    divider: '#333333',
+    surfaceBg: LeedsBlack.dark,
   },
 };
 
