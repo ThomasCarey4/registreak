@@ -1,5 +1,7 @@
+import { SuccessOverlay } from "@/components/success-overlay";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import * as Haptics from "expo-haptics";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
@@ -7,6 +9,7 @@ import { Animated, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, Te
 export default function AttendScreen() {
   const [code, setCode] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [isError, setIsError] = useState(false);
   const toastAnim = useRef(new Animated.Value(120)).current;
@@ -20,6 +23,7 @@ export default function AttendScreen() {
     useCallback(() => {
       setCode("");
       setSubmitted(false);
+      setShowSuccess(false);
       setShowToast(false);
       setIsError(false);
       toastAnim.setValue(120);
@@ -71,7 +75,17 @@ export default function AttendScreen() {
       const correct = digits === "1234";
       setIsError(!correct);
       setSubmitted(true);
-      setShowToast(true);
+      if (correct) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setShowSuccess(true);
+        // Clear digits immediately so they're gone behind the overlay
+        setTimeout(() => {
+          setCode("");
+          setSubmitted(false);
+        }, 400);
+      } else {
+        setShowToast(true);
+      }
     }
   };
 
@@ -89,6 +103,14 @@ export default function AttendScreen() {
 
   return (
     <View className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
+      <SuccessOverlay
+        visible={showSuccess}
+        onComplete={() => {
+          setShowSuccess(false);
+          handleReset();
+        }}
+      />
+
       {showToast && (
         <Animated.View
           style={{
@@ -100,15 +122,15 @@ export default function AttendScreen() {
             zIndex: 50,
             borderRadius: 16,
             overflow: "hidden",
-            backgroundColor: isError ? (isDark ? "#2B1C1C" : "#FFF5F5") : isDark ? "#1C2B1C" : "#F0FAF0",
+            backgroundColor: isDark ? "#2B1C1C" : "#FFF5F5",
             borderWidth: 1,
-            borderColor: isError ? (isDark ? "#4A2D2D" : "#FFCDD2") : isDark ? "#2D4A2D" : "#C8E6C9",
+            borderColor: isDark ? "#4A2D2D" : "#FFCDD2",
           }}
         >
           <Animated.View
             style={{
               height: 3,
-              backgroundColor: isError ? (isDark ? "#F44336" : "#EF5350") : isDark ? "#4CAF50" : "#66BB6A",
+              backgroundColor: isDark ? "#F44336" : "#EF5350",
               opacity: 0.5,
               width: toastProgress.interpolate({
                 inputRange: [0, 1],
@@ -120,28 +142,25 @@ export default function AttendScreen() {
             <View
               className="w-9 h-9 rounded-xl justify-center items-center mr-3"
               style={{
-                backgroundColor: isError ? (isDark ? "#4A2D2D" : "#FFCDD2") : isDark ? "#2D4A2D" : "#C8E6C9",
+                backgroundColor: isDark ? "#4A2D2D" : "#FFCDD2",
               }}
             >
-              <Text className="text-base" style={{ color: isError ? "#F44336" : "#4CAF50" }}>
-                {isError ? "✕" : "✓"}
+              <Text className="text-base" style={{ color: "#F44336" }}>
+                ✕
               </Text>
             </View>
             <View className="flex-1">
-              <Text
-                className="text-[14px] font-semibold"
-                style={{ color: isError ? (isDark ? "#EF9A9A" : "#C62828") : isDark ? "#81C784" : "#2E7D32" }}
-              >
-                {isError ? "Invalid Code" : "Attendance Recorded"}
+              <Text className="text-[14px] font-semibold" style={{ color: isDark ? "#EF9A9A" : "#C62828" }}>
+                Invalid Code
               </Text>
               <Text
                 className="text-[12px] mt-0.5"
                 style={{
-                  color: isError ? (isDark ? "#EF9A9A" : "#E57373") : isDark ? "#A5D6A7" : "#66BB6A",
+                  color: isDark ? "#EF9A9A" : "#E57373",
                   opacity: 0.8,
                 }}
               >
-                {isError ? "Please check the code and try again" : "You're all set for this lecture"}
+                Please check the code and try again
               </Text>
             </View>
           </View>

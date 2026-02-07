@@ -230,7 +230,9 @@ export default function StreaksScreen() {
                             className="text-[15px] font-medium"
                             style={{
                               color: isSelected
-                                ? "#fff"
+                                ? isDark
+                                  ? "#0a0202"
+                                  : "#fff"
                                 : isFuture
                                   ? isDark
                                     ? "#555"
