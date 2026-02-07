@@ -9,18 +9,19 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Lecture {
   id: string;
+  code: string;
   name: string;
   time: string;
   endTime: string;
   room: string;
-  attended: boolean;
+  attended: boolean | null;
 }
 
 interface DayData {
   lectures: Lecture[];
 }
 
-const attendanceData = rawData.attendance as Record<string, DayData>;
+const attendanceData = rawData.attendance as unknown as Record<string, DayData>;
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
@@ -59,7 +60,9 @@ function calculateStreak(data: Record<string, DayData>): number {
 
   for (const date of dates) {
     const dayLectures = data[date].lectures;
-    const hasAttended = dayLectures.some((l) => l.attended);
+    // Skip days with only scheduled (null) lectures
+    if (dayLectures.every((l) => l.attended === null)) continue;
+    const hasAttended = dayLectures.some((l) => l.attended === true);
 
     if (hasAttended) {
       streak++;
@@ -77,7 +80,10 @@ function calculateBestStreak(data: Record<string, DayData>): number {
   let current = 0;
 
   for (const date of dates) {
-    const hasAttended = data[date].lectures.some((l) => l.attended);
+    const lectures = data[date].lectures;
+    // Skip days with only scheduled (null) lectures
+    if (lectures.every((l) => l.attended === null)) continue;
+    const hasAttended = lectures.some((l) => l.attended === true);
     if (hasAttended) {
       current++;
       best = Math.max(best, current);
@@ -95,6 +101,7 @@ function calculateOverallRate(data: Record<string, DayData>): number {
 
   for (const date of Object.keys(data)) {
     for (const lecture of data[date].lectures) {
+      if (lecture.attended === null) continue;
       total++;
       if (lecture.attended) attended++;
     }
@@ -108,7 +115,8 @@ function calculatePerfectDays(data: Record<string, DayData>): number {
 
   for (const date of Object.keys(data)) {
     const lectures = data[date].lectures;
-    if (lectures.length > 0 && lectures.every((l) => l.attended)) {
+    const resolved = lectures.filter((l) => l.attended !== null);
+    if (resolved.length > 0 && resolved.every((l) => l.attended)) {
       count++;
     }
   }
@@ -371,7 +379,13 @@ export default function StreaksScreen() {
           </Animated.View>
 
           {/* Calendar Card */}
-          <View className={`rounded-2xl p-4 mb-4 shadow-sm ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-black/10"}`}>
+          <View className={`rounded-2xl p-4 mb-4 shadow-sm ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-black/10"}`} style={{
+                backgroundColor: isDark ? "#1C1C1E" : "#fff",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: isDark ? 0 : 0.08,
+                shadowRadius: 12,
+              }}>
             {/* Month Navigation */}
             <View className="flex-row justify-between items-center mb-4">
               <TouchableOpacity onPress={goToPrevMonth} className="w-9 h-9 justify-center items-center">
@@ -408,10 +422,15 @@ export default function StreaksScreen() {
 
                   const dateStr = formatDateKey(currentYear, currentMonth, day);
                   const dayData = attendanceData[dateStr];
-                  const attended = dayData?.lectures.filter((l) => l.attended).length || 0;
-                  const total = dayData?.lectures.length || 0;
-                  const progress = total > 0 ? attended / total : 0;
-                  const segments = dayData?.lectures.map((l) => l.attended) || [];
+                  const allLectures = dayData?.lectures || [];
+                  const resolvedLectures = allLectures.filter((l) => l.attended !== null);
+                  const hasOnlyScheduled = allLectures.length > 0 && resolvedLectures.length === 0;
+                  const attended = resolvedLectures.filter((l) => l.attended).length;
+                  const total = hasOnlyScheduled ? allLectures.length : resolvedLectures.length;
+                  const progress = hasOnlyScheduled ? 0 : total > 0 ? attended / total : 0;
+                  const segments = hasOnlyScheduled
+                    ? allLectures.map(() => false)
+                    : resolvedLectures.map((l) => !!l.attended);
                   const isSelected = dateStr === selectedDate;
                   const isToday = dateStr === todayStr;
                   const isFuture = new Date(currentYear, currentMonth, day) > today;
@@ -432,7 +451,13 @@ export default function StreaksScreen() {
                                 size={38}
                                 strokeWidth={3}
                                 progress={progress}
-                                progressColor={getProgressColor(attended, total)}
+                                progressColor={
+                                  hasOnlyScheduled
+                                    ? isDark
+                                      ? "#3A3A3C"
+                                      : "#D1D1D6"
+                                    : getProgressColor(attended, total)
+                                }
                                 backgroundColor={isDark ? "#2C2C2E" : "#E5E5EA"}
                                 segments={segments}
                               />
@@ -489,52 +514,153 @@ export default function StreaksScreen() {
           </View>
 
           {/* Lectures for Selected Day */}
-          <View className="gap-3">
-            <Text className={`text-xl font-bold mb-1 ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
-              {formatDisplayDate(selectedDate)}
-            </Text>
+          <View className="gap-2">
+            <View className="flex-row items-baseline mb-2">
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: "600",
+                  color: isDark ? "rgba(236,237,238,0.8)" : "rgba(55,65,81,0.7)",
+                }}
+              >
+                {(() => {
+                  const [y, m, d] = selectedDate.split("-").map(Number);
+                  const date = new Date(y, m - 1, d);
+                  return date.toLocaleDateString("en-GB", { weekday: "long" });
+                })()}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: "400",
+                  color: isDark ? "rgba(236,237,238,0.35)" : "rgba(55,65,81,0.35)",
+                  marginLeft: 6,
+                }}
+              >
+                {(() => {
+                  const [y, m, d] = selectedDate.split("-").map(Number);
+                  const date = new Date(y, m - 1, d);
+                  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+                })()}
+              </Text>
+            </View>
 
             {selectedDayData.length > 0 ? (
-              selectedDayData.map((lecture, index) => (
-                <View
-                  key={`${lecture.id}-${index}`}
-                  className={`rounded-xl p-4 flex-row items-center border-l-4 shadow-sm ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-black/5"}`}
+              <View
+                className="rounded-2xl overflow-hidden"
+                style={{
+                  backgroundColor: isDark ? "#1C1C1E" : "#fff",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: isDark ? 0 : 0.06,
+                  shadowRadius: 8,
+                }}
+              >
+                {selectedDayData.map((lecture, index) => (
+                  <View key={`${lecture.id}-${index}`}>
+                    {index > 0 && (
+                      <View
+                        style={{
+                          height: 1,
+                          marginHorizontal: 16,
+                          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+                        }}
+                      />
+                    )}
+                    <View className="px-4 py-3.5 flex-row items-center">
+                      {/* Attendance dot */}
+                      <View
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: 4,
+                          marginRight: 12,
+                          backgroundColor:
+                            lecture.attended === null
+                              ? isDark
+                                ? "#3A3A3C"
+                                : "#C7C7CC"
+                              : lecture.attended
+                                ? "#4CAF50"
+                                : "#F44336",
+                        }}
+                      />
+
+                      {/* Lecture info */}
+                      <View className="flex-1">
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontWeight: "600",
+                            color: isDark ? "#ECEDEE" : "#374151",
+                          }}
+                          numberOfLines={1}
+                        >
+                          {lecture.name}
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: 13,
+                            fontWeight: "400",
+                            color: isDark ? "rgba(236,237,238,0.5)" : "rgba(55,65,81,0.5)",
+                            marginTop: 2,
+                          }}
+                        >
+                          {lecture.room}
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: 11,
+                            fontWeight: "500",
+                            color: isDark ? "rgba(236,237,238,0.3)" : "rgba(55,65,81,0.3)",
+                            marginTop: 2,
+                          }}
+                          numberOfLines={1}
+                        >
+                          {lecture.code}
+                        </Text>
+                      </View>
+
+                      {/* Time column */}
+                      <View className="ml-3 items-end">
+                        <Text
+                          style={{
+                            fontSize: 13,
+                            fontWeight: "600",
+                            fontVariant: ["tabular-nums"],
+                            color: isDark ? "rgba(236,237,238,0.7)" : "rgba(55,65,81,0.6)",
+                          }}
+                        >
+                          {lecture.time}
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: 11,
+                            fontVariant: ["tabular-nums"],
+                            color: isDark ? "rgba(236,237,238,0.3)" : "rgba(55,65,81,0.3)",
+                            marginTop: 1,
+                          }}
+                        >
+                          {lecture.endTime}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View
+                className="rounded-2xl py-10 items-center"
+                style={{
+                  backgroundColor: isDark ? "#1C1C1E" : "#fff",
+                }}
+              >
+                <Text
                   style={{
-                    borderLeftColor: lecture.attended ? "#4CAF50" : "#F44336",
+                    fontSize: 13,
+                    color: isDark ? "rgba(236,237,238,0.3)" : "rgba(55,65,81,0.3)",
                   }}
                 >
-                  <View className="mr-4 items-center w-12">
-                    <Text className={`text-[15px] font-semibold ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
-                      {lecture.time}
-                    </Text>
-                    <Text className="text-xs mt-0.5 text-[#8E8E93]">{lecture.endTime}</Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className={`text-[15px] font-semibold mb-1 ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
-                      {lecture.name}
-                    </Text>
-                    <Text className="text-[13px] text-[#8E8E93]">📍 {lecture.room}</Text>
-                  </View>
-                  <View
-                    className="w-8 h-8 rounded-full justify-center items-center ml-3"
-                    style={{
-                      backgroundColor: lecture.attended ? "#E8F5E9" : "#FFEBEE",
-                    }}
-                  >
-                    <Text
-                      className="text-base font-bold"
-                      style={{
-                        color: lecture.attended ? "#2E7D32" : "#C62828",
-                      }}
-                    >
-                      {lecture.attended ? "✓" : "✗"}
-                    </Text>
-                  </View>
-                </View>
-              ))
-            ) : (
-              <View className={`rounded-xl p-8 items-center ${isDark ? "bg-[#1C1C1E]" : "bg-white"}`}>
-                <Text className={`text-[15px] ${isDark ? "text-[#ECEDEE]/40" : "text-[#374151]/40"}`}>
                   No lectures scheduled
                 </Text>
               </View>
