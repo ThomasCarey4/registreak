@@ -1,22 +1,20 @@
 from flask import Blueprint, jsonify, request
 from .models import Users, Course, Module, Lecture, LectureAttendance
-from flask_socketio import SocketIO, emit
-
+from .controllers import get_lecturer_current_lectures, verify_student_attendance
 main = Blueprint('main', __name__)
 
 @main.route('/')
 def home():
     return jsonify(message="Hello, Flask + SQLAlchemy!")
 
-@main.route('/code', methods=['GET'])
-def get_code():
+@main.route('/code/<lecturer_id>', methods=['GET'])
+def get_code(lecturer_id):
     """
     Send code to front end via websockets every 30 seconds
     Returns a verification code for attendance checking
     """
     try:
-        # TODO: Generate random code, send via websocket every 30 seconds
-        code_value = "123456"
+        code_value = get_lecturer_current_lectures(lecturer_id)
         return jsonify({"code": code_value}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -29,7 +27,7 @@ def verify_code():
     Expected JSON: { "code": str, "student_id": str, "lecture_id": int }
     """
     try:
-        data = request.get_json(force=True)
+        data = verify_student_attendance(request.get_json())
         # TODO: Validate code matches current code, retrieve lecture, save attendance
         # Verify code
         # Find lecture_attendance record
