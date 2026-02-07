@@ -25,4 +25,4 @@ COPY . /app/
 EXPOSE 5000
 
 # Run the application
-CMD ["poetry", "run", "python", "run.py"]
+CMD ["sh", "-c", "cd /app && poetry run python api/run.py"]

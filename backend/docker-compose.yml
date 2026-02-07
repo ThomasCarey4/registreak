@@ -15,7 +15,7 @@ services:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
 
@@ -34,7 +34,6 @@ services:
         condition: service_healthy
     volumes:
       - ./api:/app/api
-    command: poetry run python -m api.run
 
 volumes:
   db_data:
