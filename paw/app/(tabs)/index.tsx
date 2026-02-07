@@ -100,21 +100,15 @@ export default function AttendScreen() {
             zIndex: 50,
             borderRadius: 16,
             overflow: "hidden",
-            backgroundColor: isError
-              ? (isDark ? "#2B1C1C" : "#FFF5F5")
-              : (isDark ? "#1C2B1C" : "#F0FAF0"),
+            backgroundColor: isError ? (isDark ? "#2B1C1C" : "#FFF5F5") : isDark ? "#1C2B1C" : "#F0FAF0",
             borderWidth: 1,
-            borderColor: isError
-              ? (isDark ? "#4A2D2D" : "#FFCDD2")
-              : (isDark ? "#2D4A2D" : "#C8E6C9"),
+            borderColor: isError ? (isDark ? "#4A2D2D" : "#FFCDD2") : isDark ? "#2D4A2D" : "#C8E6C9",
           }}
         >
           <Animated.View
             style={{
               height: 3,
-              backgroundColor: isError
-                ? (isDark ? "#F44336" : "#EF5350")
-                : (isDark ? "#4CAF50" : "#66BB6A"),
+              backgroundColor: isError ? (isDark ? "#F44336" : "#EF5350") : isDark ? "#4CAF50" : "#66BB6A",
               opacity: 0.5,
               width: toastProgress.interpolate({
                 inputRange: [0, 1],
@@ -126,34 +120,24 @@ export default function AttendScreen() {
             <View
               className="w-9 h-9 rounded-xl justify-center items-center mr-3"
               style={{
-                backgroundColor: isError
-                  ? (isDark ? "#4A2D2D" : "#FFCDD2")
-                  : (isDark ? "#2D4A2D" : "#C8E6C9"),
+                backgroundColor: isError ? (isDark ? "#4A2D2D" : "#FFCDD2") : isDark ? "#2D4A2D" : "#C8E6C9",
               }}
             >
-              <Text
-                className="text-base"
-                style={{ color: isError ? "#F44336" : "#4CAF50" }}
-              >
+              <Text className="text-base" style={{ color: isError ? "#F44336" : "#4CAF50" }}>
                 {isError ? "✕" : "✓"}
               </Text>
             </View>
             <View className="flex-1">
               <Text
                 className="text-[14px] font-semibold"
-                style={{ color: isError
-                  ? (isDark ? "#EF9A9A" : "#C62828")
-                  : (isDark ? "#81C784" : "#2E7D32"),
-                }}
+                style={{ color: isError ? (isDark ? "#EF9A9A" : "#C62828") : isDark ? "#81C784" : "#2E7D32" }}
               >
                 {isError ? "Invalid Code" : "Attendance Recorded"}
               </Text>
               <Text
                 className="text-[12px] mt-0.5"
                 style={{
-                  color: isError
-                    ? (isDark ? "#EF9A9A" : "#E57373")
-                    : (isDark ? "#A5D6A7" : "#66BB6A"),
+                  color: isError ? (isDark ? "#EF9A9A" : "#E57373") : isDark ? "#A5D6A7" : "#66BB6A",
                   opacity: 0.8,
                 }}
               >
@@ -186,11 +170,25 @@ export default function AttendScreen() {
               className="w-[68px] h-[84px] rounded-2xl border-2 justify-center items-center"
               style={{
                 borderColor: submitted
-                  ? isError ? "#F44336" : "#4CAF50"
-                  : code.length === i ? tintColor : isDark ? "#333" : "#D0D5DD",
+                  ? isError
+                    ? "#F44336"
+                    : "#4CAF50"
+                  : code.length === i
+                    ? tintColor
+                    : isDark
+                      ? "#333"
+                      : "#D0D5DD",
                 backgroundColor: submitted
-                  ? isError ? (isDark ? "#3a1a1a" : "#FBE9E7") : (isDark ? "#1a3a1a" : "#E8F5E9")
-                  : isDark ? "#1C1C1E" : "#F9FAFB",
+                  ? isError
+                    ? isDark
+                      ? "#3a1a1a"
+                      : "#FBE9E7"
+                    : isDark
+                      ? "#1a3a1a"
+                      : "#E8F5E9"
+                  : isDark
+                    ? "#1C1C1E"
+                    : "#F9FAFB",
               }}
             >
               <Text
