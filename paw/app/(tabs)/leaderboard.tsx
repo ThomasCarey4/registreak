@@ -58,26 +58,55 @@ const MEDALS: Record<number, string> = {
   3: "🥉",
 };
 
-function StreakBadge({ streak }: { streak: number }) {
+function StreakBadge({ streak, isDark }: { streak: number; isDark: boolean }) {
   if (streak <= 0) return null;
 
   const isHot = streak >= 7;
   const isOnFire = streak >= 14;
 
+  const bgColor = isDark
+    ? isOnFire
+      ? "rgba(145, 0, 0, 0.35)"
+      : isHot
+        ? "rgba(199, 0, 0, 0.25)"
+        : "rgba(255, 78, 54, 0.15)"
+    : isOnFire
+      ? LeedsRed.faded
+      : isHot
+        ? "rgba(199, 0, 0, 0.1)"
+        : "rgba(255, 78, 54, 0.08)";
+
+  const textColor = isDark
+    ? isOnFire
+      ? LeedsRed.pastel
+      : isHot
+        ? LeedsRed.bright
+        : "rgba(255, 138, 122, 0.9)"
+    : isOnFire
+      ? LeedsRed.dark
+      : isHot
+        ? LeedsRed.base
+        : LeedsRed.bright;
+
+  const borderColor = isDark
+    ? isOnFire
+      ? "rgba(255, 138, 122, 0.3)"
+      : isHot
+        ? "rgba(255, 78, 54, 0.25)"
+        : "rgba(255, 78, 54, 0.18)"
+    : isOnFire
+      ? "rgba(145, 0, 0, 0.2)"
+      : isHot
+        ? "rgba(199, 0, 0, 0.15)"
+        : "rgba(255, 78, 54, 0.15)";
+
   return (
     <View
       className="flex-row items-center gap-0.5 px-2 py-1 rounded-full"
-      style={{
-        backgroundColor: isOnFire ? LeedsRed.faded : isHot ? "rgba(199, 0, 0, 0.1)" : "rgba(255, 78, 54, 0.08)",
-      }}
+      style={{ backgroundColor: bgColor, borderWidth: 1, borderColor }}
     >
       <Text className="text-xs">🔥</Text>
-      <Text
-        className="font-bold text-xs"
-        style={{
-          color: isOnFire ? LeedsRed.dark : isHot ? LeedsRed.base : LeedsRed.bright,
-        }}
-      >
+      <Text className="font-bold text-xs" style={{ color: textColor }}>
         {streak}
       </Text>
     </View>
@@ -169,7 +198,7 @@ export default function LeaderboardScreen() {
                   </View>
 
                   {/* Streak */}
-                  <StreakBadge streak={student.streak} />
+                  <StreakBadge streak={student.streak} isDark={isDark} />
                 </View>
               );
             })}
@@ -226,7 +255,7 @@ export default function LeaderboardScreen() {
                 </View>
 
                 {/* Streak */}
-                <StreakBadge streak={currentUserItem.student.streak} />
+                <StreakBadge streak={currentUserItem.student.streak} isDark={isDark} />
               </View>
             </View>
           )}

@@ -1,7 +1,6 @@
 import { SuccessOverlay } from "@/components/success-overlay";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
 
@@ -18,21 +17,13 @@ export default function AttendScreen() {
   const tintColor = Colors[colorScheme].tint;
   const isDark = colorScheme === "dark";
 
-  useFocusEffect(
-    useCallback(() => {
-      setCode("");
-      setSubmitted(false);
-      setShowSuccess(false);
-      setShowToast(false);
-      setIsError(false);
-      toastAnim.setValue(120);
-      toastProgress.setValue(1);
-      const timer = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timer);
-    }, []),
-  );
+  // Auto-open keyboard only on initial app launch
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (showToast) {
@@ -96,11 +87,10 @@ export default function AttendScreen() {
   const handleReset = () => {
     setCode("");
     setSubmitted(false);
-    setTimeout(() => inputRef.current?.focus(), 100);
   };
 
   return (
-    <View className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
+    <Pressable onPress={Keyboard.dismiss} className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
       <SuccessOverlay
         visible={showSuccess}
         onComplete={() => {
@@ -224,11 +214,10 @@ export default function AttendScreen() {
           onChangeText={handleCodeChange}
           keyboardType="number-pad"
           maxLength={4}
-          autoFocus
           className="absolute opacity-0 h-0 w-0"
           caretHidden
         />
       </KeyboardAvoidingView>
-    </View>
+    </Pressable>
   );
 }
