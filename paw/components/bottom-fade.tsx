@@ -13,8 +13,7 @@ export function useBottomFade() {
   const onScroll = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
       const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
-      const distanceFromBottom =
-        contentSize.height - layoutMeasurement.height - contentOffset.y;
+      const distanceFromBottom = contentSize.height - layoutMeasurement.height - contentOffset.y;
       const shouldShow = distanceFromBottom > THRESHOLD;
 
       if (shouldShow !== visible) {
@@ -49,10 +48,7 @@ export function BottomFade({ opacity }: { opacity?: Animated.Value }) {
       }}
       pointerEvents="none"
     >
-      <LinearGradient
-        colors={[`${bg}0)`, `${bg}0.9)`, `${bg}1)`]}
-        style={{ flex: 1 }}
-      />
+      <LinearGradient colors={[`${bg}0)`, `${bg}0.9)`, `${bg}1)`]} style={{ flex: 1 }} />
     </Animated.View>
   );
 }

@@ -136,7 +136,12 @@ export default function LeaderboardScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.surfaceBg }}>
       <SafeAreaView className="flex-1" edges={["top"]}>
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false} onScroll={onFadeScroll} scrollEventThrottle={16}>
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          onScroll={onFadeScroll}
+          scrollEventThrottle={16}
+        >
           {/* Header */}
           <View className="px-5 pt-5 pb-2">
             <Text style={{ fontSize: 32, fontWeight: "bold", marginBottom: 4, color: colors.text }}>Leaderboard</Text>

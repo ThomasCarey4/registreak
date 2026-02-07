@@ -212,7 +212,13 @@ export default function StreaksScreen() {
   return (
     <View className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
       <SafeAreaView className="flex-1" edges={["top"]}>
-        <ScrollView className="flex-1" contentContainerClassName="p-5 pb-10" showsVerticalScrollIndicator={false} onScroll={onFadeScroll} scrollEventThrottle={16}>
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="p-5 pb-10"
+          showsVerticalScrollIndicator={false}
+          onScroll={onFadeScroll}
+          scrollEventThrottle={16}
+        >
           {/* Header */}
           <Text className={`text-[32px] font-bold mb-5 ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
             Attendance
