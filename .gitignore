@@ -1,0 +1,6 @@
+### Ignore Nix and JetBrains IDE files
+.idea/
+*.nix
+.envrc
+.direnv/
+android/
