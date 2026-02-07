@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 import os
 
 db = SQLAlchemy()
@@ -11,6 +12,7 @@ def create_app():
     app.config['ATTENDANCE_SECRET_SEED'] = os.getenv('ATTENDANCE_SECRET_SEED', 'default-secret-seed-change-in-production')
 
     db.init_app(app)
+    CORS(app)
 
     from .routes import main
     app.register_blueprint(main)
