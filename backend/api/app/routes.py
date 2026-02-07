@@ -13,30 +13,16 @@ def get_code(lecturer_id):
     Send code to front end via websockets every 30 seconds
     Returns a verification code for attendance checking
     """
-    try:
-        code_value = get_lecturer_current_lectures(lecturer_id)
-        return jsonify({"code": code_value}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return get_lecturer_current_lectures(lecturer_id)
 
     
 @main.route('/verify', methods=['POST'])
 def verify_code():
     """
     Verify code given in body and save attendance to database
-    Expected JSON: { "code": str, "student_id": str, "lecture_id": int }
+    Expected JSON: { "code": str, "student_id": str }
     """
-    try:
-        data = verify_student_attendance(request.get_json())
-        # TODO: Validate code matches current code, retrieve lecture, save attendance
-        # Verify code
-        # Find lecture_attendance record
-        # Mark as attended
-        pass
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-    
-    return jsonify({"message": "Attendance verified successfully"}), 200
+    return verify_student_attendance(request.get_json())
 
 
 @main.route('/user/<student_id>', methods=['GET'])
