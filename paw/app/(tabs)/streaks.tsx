@@ -188,6 +188,7 @@ export default function StreaksScreen() {
                   const attended = dayData?.lectures.filter((l) => l.attended).length || 0;
                   const total = dayData?.lectures.length || 0;
                   const progress = total > 0 ? attended / total : 0;
+                  const segments = dayData?.lectures.map((l) => l.attended) || [];
                   const isSelected = dateStr === selectedDate;
                   const isToday = dateStr === todayStr;
                   const isFuture = new Date(currentYear, currentMonth, day) > today;
@@ -195,48 +196,48 @@ export default function StreaksScreen() {
                   return (
                     <TouchableOpacity
                       key={dayIndex}
-                      className="flex-1 items-center justify-center h-[46px]"
+                      className="flex-1 items-center justify-center h-[50px]"
                       onPress={() => setSelectedDate(dateStr)}
                       activeOpacity={0.6}
                     >
-                      <View className="w-[38px] h-[38px] items-center justify-center relative">
-                        {total > 0 && (
-                          <View className="absolute top-0 left-0">
-                            <RadialProgress
-                              size={38}
-                              strokeWidth={3}
-                              progress={progress}
-                              progressColor={getProgressColor(attended, total)}
-                              backgroundColor={isDark ? "#2C2C2E" : "#E5E5EA"}
+                      <View className="items-center">
+                        <View className="w-[38px] h-[38px] items-center justify-center relative">
+                          {/* Radial progress ring – always visible */}
+                          {total > 0 && (
+                            <View className="absolute top-0 left-0">
+                              <RadialProgress
+                                size={38}
+                                strokeWidth={3}
+                                progress={progress}
+                                progressColor={getProgressColor(attended, total)}
+                                backgroundColor={isDark ? "#2C2C2E" : "#E5E5EA"}
+                                segments={segments}
+                              />
+                            </View>
+                          )}
+
+                          {/* Subtle inner highlight for selected day */}
+                          {isSelected && (
+                            <View
+                              className="absolute rounded-full"
+                              style={{
+                                width: 30,
+                                height: 30,
+                                backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+                              }}
                             />
-                          </View>
-                        )}
-                        <View
-                          className="w-[38px] h-[38px] items-center justify-center"
-                          style={[
-                            isSelected && {
-                              backgroundColor: colors.tint,
-                              borderRadius: 19,
-                            },
-                            isToday &&
-                              !isSelected && {
-                                borderWidth: 1.5,
-                                borderColor: colors.tint,
-                                borderRadius: 19,
-                              },
-                          ]}
-                        >
+                          )}
+
                           <Text
-                            className="text-[15px] font-medium"
                             style={{
-                              color: isSelected
+                              fontSize: 15,
+                              fontWeight: isSelected || isToday ? "700" : "500",
+                              color: isFuture
                                 ? isDark
-                                  ? "#0a0202"
-                                  : "#fff"
-                                : isFuture
-                                  ? isDark
-                                    ? "#555"
-                                    : "#C7C7CC"
+                                  ? "#555"
+                                  : "#C7C7CC"
+                                : isToday
+                                  ? colors.tint
                                   : isDark
                                     ? "#fff"
                                     : "#1C1C1E",
@@ -245,6 +246,17 @@ export default function StreaksScreen() {
                             {day}
                           </Text>
                         </View>
+
+                        {/* Selection dot indicator */}
+                        <View
+                          style={{
+                            width: 5,
+                            height: 5,
+                            borderRadius: 2.5,
+                            marginTop: 2,
+                            backgroundColor: isSelected ? colors.tint : "transparent",
+                          }}
+                        />
                       </View>
                     </TouchableOpacity>
                   );

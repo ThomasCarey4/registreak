@@ -37,6 +37,14 @@
           "endTime": "16:00",
           "room": "Lab A",
           "attended": true
+        },
+        {
+          "id": "cs101lab",
+          "name": "CS 101 - Lab Session",
+          "time": "16:00",
+          "endTime": "16:00",
+          "room": "Lab A",
+          "attended": true
         }
       ]
     },
@@ -56,7 +64,23 @@
           "time": "13:00",
           "endTime": "14:00",
           "room": "LT4",
-          "attended": true
+          "attended": false
+        },
+        {
+          "id": "stats301",
+          "name": "STAT 301 - Probability",
+          "time": "13:00",
+          "endTime": "14:00",
+          "room": "LT4",
+          "attended": false
+        },
+        {
+          "id": "stats301",
+          "name": "STAT 301 - Probability",
+          "time": "13:00",
+          "endTime": "14:00",
+          "room": "LT4",
+          "attended": false
         }
       ]
     },
