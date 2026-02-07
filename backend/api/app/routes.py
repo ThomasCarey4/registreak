@@ -9,39 +9,55 @@ def home():
     return jsonify(message="Hello, Flask + SQLAlchemy!")
 
 @main.route('/code', methods=['GET'])
-def code():
-    """"
+def get_code():
+    """
     Send code to front end via websockets every 30 seconds
+    Returns a verification code for attendance checking
     """
     try:
-        pass
-    except:
-        return jsonify({}), 500
+        # TODO: Generate random code, send via websocket every 30 seconds
+        code_value = "123456"
+        return jsonify({"code": code_value}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
     
 @main.route('/verify', methods=['POST'])
-def code():
-    """"
-    Verify code given in body and save attenance to db
+def verify_code():
+    """
+    Verify code given in body and save attendance to database
+    Expected JSON: { "code": str, "student_id": str, "lecture_id": int }
     """
     try:
-        json = request.get_json(force=True)
+        data = request.get_json(force=True)
+        # TODO: Validate code matches current code, retrieve lecture, save attendance
+        # Verify code
+        # Find lecture_attendance record
+        # Mark as attended
         pass
-    except:
-        return jsonify({}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
     
-    return jsonify({"message": "OK"}), 200
+    return jsonify({"message": "Attendance verified successfully"}), 200
 
-@main.route('/user/<student_number>', methods=['GET'])
-def code(student_number):
-    """"
-    return student info
+
+@main.route('/user/<student_id>', methods=['GET'])
+def get_user_info(student_id):
+    """
+    Return student information by student_id
     """
     try:
-        pass
-    except:
-        return jsonify({}), 500
-    
-    return jsonify({"message": "OK"}), 200
+        user = Users.query.filter_by(student_id=student_id).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        return jsonify({
+            "student_id": user.student_id,
+            "username": user.username,
+            "is_staff": user.is_staff
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 
@@ -67,13 +83,23 @@ def login():
     """
     Login with username and password
     Expected JSON: { "username": str, "password": str }
+    Returns: { "token": str, "user": { ... } }
     """
     try:
         data = request.get_json(force=True)
-        # TODO: Verify credentials, create session/token
+        if not data or not data.get('username') or not data.get('password'):
+            return jsonify({"error": "Missing username or password"}), 400
+        
+        # TODO: Verify credentials against database
+        # TODO: Hash and compare password
+        # TODO: Generate JWT or session token
+        user = Users.query.filter_by(username=data.get('username')).first()
+        if not user:
+            return jsonify({"error": "Invalid credentials"}), 401
+        
         pass
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": str(e)}), 500
     
     return jsonify({"message": "Login successful"}), 200
 
@@ -81,13 +107,14 @@ def login():
 @main.route('/account/logout', methods=['POST'])
 def logout():
     """
-    Logout the current user
+    Logout the current user and invalidate session/token
     """
     try:
-        # TODO: Invalidate session/token
+        # TODO: Get current user from session/token
+        # TODO: Invalidate token in database or blacklist
         pass
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": str(e)}), 500
     
     return jsonify({"message": "Logout successful"}), 200
 
@@ -96,28 +123,100 @@ def logout():
 def get_profile():
     """
     Get the current user's profile information
+    Requires authentication
     """
     try:
-        # TODO: Get current user from session/token, return profile data
+        # TODO: Extract user from authentication token/session
+        # TODO: Query database for user details
         pass
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": str(e)}), 401
     
     return jsonify({"message": "OK"}), 200
+
+
+@main.route('/account/profile', methods=['PUT'])
+def update_profile():
+    """
+    Update the current user's profile information
+    Expected JSON: { "username": str, "email": str, ... }
+    Requires authentication
+    """
+    try:
+        data = request.get_json(force=True)
+        # TODO: Extract user from authentication token/session
+        # TODO: Validate new data
+        # TODO: Update user in database
+        pass
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    return jsonify({"message": "Profile updated successfully"}), 200
+
+
+@main.route('/account/change-password', methods=['POST'])
+def change_password():
+    """
+    Change the current user's password
+    Expected JSON: { "old_password": str, "new_password": str }
+    Requires authentication
+    """
+    try:
+        data = request.get_json(force=True)
+        if not data.get('old_password') or not data.get('new_password'):
+            return jsonify({"error": "Missing old or new password"}), 400
+        
+        # TODO: Extract user from authentication token/session
+        # TODO: Verify old password matches
+        # TODO: Hash new password
+        # TODO: Update password in database
+        pass
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    return jsonify({"message": "Password changed successfully"}), 200
+
+
+@main.route('/account/verify-email', methods=['POST'])
+def verify_email():
+    """
+    Verify user email with token
+    Expected JSON: { "token": str }
+    """
+    try:
+        data = request.get_json(force=True)
+        if not data.get('token'):
+            return jsonify({"error": "Missing verification token"}), 400
+        
+        # TODO: Validate token format and expiry
+        # TODO: Find user associated with token
+        # TODO: Mark email as verified
+        # TODO: Delete or invalidate token
+        pass
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    return jsonify({"message": "Email verified successfully"}), 200
 
 
 @main.route('/account/delete', methods=['DELETE'])
 def delete_account():
     """
-    Delete the current user's account
+    Delete the current user's account (requires password confirmation)
     Expected JSON: { "password": str }
+    Requires authentication
     """
     try:
         data = request.get_json(force=True)
-        # TODO: Verify password, delete user account
+        if not data.get('password'):
+            return jsonify({"error": "Missing password confirmation"}), 400
+        
+        # TODO: Extract user from authentication token/session
+        # TODO: Verify password matches
+        # TODO: Delete user and related data from database
         pass
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": str(e)}), 500
     
     return jsonify({"message": "Account deleted successfully"}), 200
 
