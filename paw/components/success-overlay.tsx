@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import { useEffect } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import Animated, {
@@ -60,6 +61,11 @@ export function SuccessOverlay({ visible, onComplete }: SuccessOverlayProps) {
       // Icon container scale — bouncy pop
       iconScale.value = withDelay(450, withSpring(1, { damping: 8, stiffness: 160, mass: 0.7 }));
 
+      // Haptic feedback — timed with the first ripple pulse
+      const hapticTimer = setTimeout(() => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }, 700);
+
       // Ripple 1 — starts right after tick lands (from circle outward)
       ring1Scale.value = withDelay(700, withTiming(3.5, { duration: 900, easing: Easing.out(Easing.quad) }));
       ring1Opacity.value = withDelay(
@@ -100,7 +106,10 @@ export function SuccessOverlay({ visible, onComplete }: SuccessOverlayProps) {
         });
       }, 3000);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(hapticTimer);
+      };
     }
   }, [visible]);
 

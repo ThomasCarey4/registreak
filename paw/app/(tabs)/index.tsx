@@ -1,7 +1,6 @@
 import { SuccessOverlay } from "@/components/success-overlay";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import * as Haptics from "expo-haptics";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
@@ -76,7 +75,6 @@ export default function AttendScreen() {
       setIsError(!correct);
       setSubmitted(true);
       if (correct) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         setShowSuccess(true);
         // Clear digits immediately so they're gone behind the overlay
         setTimeout(() => {
