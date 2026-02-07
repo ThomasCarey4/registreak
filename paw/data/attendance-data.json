@@ -1,0 +1,372 @@
+{
+  "attendance": {
+    "2026-01-12": {
+      "lectures": [
+        {
+          "id": "cs101",
+          "name": "CS 101 - Intro to Computer Science",
+          "time": "09:00",
+          "endTime": "10:00",
+          "room": "LT1",
+          "attended": true
+        },
+        {
+          "id": "math201",
+          "name": "MATH 201 - Linear Algebra",
+          "time": "11:00",
+          "endTime": "12:00",
+          "room": "LT3",
+          "attended": true
+        }
+      ]
+    },
+    "2026-01-13": {
+      "lectures": [
+        {
+          "id": "phys101",
+          "name": "PHYS 101 - Mechanics",
+          "time": "10:00",
+          "endTime": "11:00",
+          "room": "LT2",
+          "attended": true
+        },
+        {
+          "id": "cs101lab",
+          "name": "CS 101 - Lab Session",
+          "time": "14:00",
+          "endTime": "16:00",
+          "room": "Lab A",
+          "attended": true
+        }
+      ]
+    },
+    "2026-01-14": {
+      "lectures": [
+        {
+          "id": "cs101",
+          "name": "CS 101 - Intro to Computer Science",
+          "time": "09:00",
+          "endTime": "10:00",
+          "room": "LT1",
+          "attended": true
+        },
+        {
+          "id": "stats301",
+          "name": "STAT 301 - Probability",
+          "time": "13:00",
+          "endTime": "14:00",
+          "room": "LT4",
+          "attended": true
+        }
+      ]
+    },
+    "2026-01-15": {
+      "lectures": [
+        {
+          "id": "math201",
+          "name": "MATH 201 - Linear Algebra",
+          "time": "11:00",
+          "endTime": "12:00",
+          "room": "LT3",
+          "attended": true
+        },
+        {
+          "id": "phys101",
+          "name": "PHYS 101 - Mechanics",
+          "time": "14:00",
+          "endTime": "15:00",
+          "room": "LT2",
+          "attended": false
+        }
+      ]
+    },
+    "2026-01-16": {
+      "lectures": [
+        {
+          "id": "cs101",
+          "name": "CS 101 - Intro to Computer Science",
+          "time": "09:00",
+          "endTime": "10:00",
+          "room": "LT1",
+          "attended": true
+        }
+      ]
+    },
+    "2026-01-19": {
+      "lectures": [
+        {
+          "id": "cs101",
+          "name": "CS 101 - Intro to Computer Science",
+          "time": "09:00",
+          "endTime": "10:00",
+          "room": "LT1",
+          "attended": false
+        },
+        {
+          "id": "math201",
+          "name": "MATH 201 - Linear Algebra",
+          "time": "11:00",
+          "endTime": "12:00",
+          "room": "LT3",
+          "attended": false
+        }
+      ]
+    },
+    "2026-01-20": {
+      "lectures": [
+        {
+          "id": "phys101",
+          "name": "PHYS 101 - Mechanics",
+          "time": "10:00",
+          "endTime": "11:00",
+          "room": "LT2",
+          "attended": true
+        },
+        {
+          "id": "cs101lab",
+          "name": "CS 101 - Lab Session",
+          "time": "14:00",
+          "endTime": "16:00",
+          "room": "Lab A",
+          "attended": true
+        }
+      ]
+    },
+    "2026-01-21": {
+      "lectures": [
+        {
+          "id": "cs101",
+          "name": "CS 101 - Intro to Computer Science",
+          "time": "09:00",
+          "endTime": "10:00",
+          "room": "LT1",
+          "attended": true
+        },
+        {
+          "id": "stats301",
+          "name": "STAT 301 - Probability",
+          "time": "13:00",
+          "endTime": "14:00",
+          "room": "LT4",
+          "attended": true
+        }
+      ]
+    },
+    "2026-01-22": {
+      "lectures": [
+        {
+          "id": "math201",
+          "name": "MATH 201 - Linear Algebra",
+          "time": "11:00",
+          "endTime": "12:00",
+          "room": "LT3",
+          "attended": true
+        },
+        {
+          "id": "phys101",
+          "name": "PHYS 101 - Mechanics",
+          "time": "14:00",
+          "endTime": "15:00",
+          "room": "LT2",
+          "attended": true
+        }
+      ]
+    },
+    "2026-01-23": {
+      "lectures": [
+        {
+          "id": "cs101",
+          "name": "CS 101 - Intro to Computer Science",
+          "time": "09:00",
+          "endTime": "10:00",
+          "room": "LT1",
+          "attended": true
+        }
+      ]
+    },
+    "2026-01-26": {
+      "lectures": [
+        {
+          "id": "cs101",
+          "name": "CS 101 - Intro to Computer Science",
+          "time": "09:00",
+          "endTime": "10:00",
+          "room": "LT1",
+          "attended": true
+        },
+        {
+          "id": "math201",
+          "name": "MATH 201 - Linear Algebra",
+          "time": "11:00",
+          "endTime": "12:00",
+          "room": "LT3",
+          "attended": true
+        }
+      ]
+    },
+    "2026-01-27": {
+      "lectures": [
+        {
+          "id": "phys101",
+          "name": "PHYS 101 - Mechanics",
+          "time": "10:00",
+          "endTime": "11:00",
+          "room": "LT2",
+          "attended": true
+        },
+        {
+          "id": "cs101lab",
+          "name": "CS 101 - Lab Session",
+          "time": "14:00",
+          "endTime": "16:00",
+          "room": "Lab A",
+          "attended": true
+        }
+      ]
+    },
+    "2026-01-28": {
+      "lectures": [
+        {
+          "id": "cs101",
+          "name": "CS 101 - Intro to Computer Science",
+          "time": "09:00",
+          "endTime": "10:00",
+          "room": "LT1",
+          "attended": true
+        },
+        {
+          "id": "stats301",
+          "name": "STAT 301 - Probability",
+          "time": "13:00",
+          "endTime": "14:00",
+          "room": "LT4",
+          "attended": false
+        }
+      ]
+    },
+    "2026-01-29": {
+      "lectures": [
+        {
+          "id": "math201",
+          "name": "MATH 201 - Linear Algebra",
+          "time": "11:00",
+          "endTime": "12:00",
+          "room": "LT3",
+          "attended": true
+        },
+        {
+          "id": "phys101",
+          "name": "PHYS 101 - Mechanics",
+          "time": "14:00",
+          "endTime": "15:00",
+          "room": "LT2",
+          "attended": true
+        }
+      ]
+    },
+    "2026-01-30": {
+      "lectures": [
+        {
+          "id": "cs101",
+          "name": "CS 101 - Intro to Computer Science",
+          "time": "09:00",
+          "endTime": "10:00",
+          "room": "LT1",
+          "attended": true
+        }
+      ]
+    },
+    "2026-02-02": {
+      "lectures": [
+        {
+          "id": "cs101",
+          "name": "CS 101 - Intro to Computer Science",
+          "time": "09:00",
+          "endTime": "10:00",
+          "room": "LT1",
+          "attended": true
+        },
+        {
+          "id": "math201",
+          "name": "MATH 201 - Linear Algebra",
+          "time": "11:00",
+          "endTime": "12:00",
+          "room": "LT3",
+          "attended": true
+        }
+      ]
+    },
+    "2026-02-03": {
+      "lectures": [
+        {
+          "id": "phys101",
+          "name": "PHYS 101 - Mechanics",
+          "time": "10:00",
+          "endTime": "11:00",
+          "room": "LT2",
+          "attended": true
+        },
+        {
+          "id": "cs101lab",
+          "name": "CS 101 - Lab Session",
+          "time": "14:00",
+          "endTime": "16:00",
+          "room": "Lab A",
+          "attended": true
+        }
+      ]
+    },
+    "2026-02-04": {
+      "lectures": [
+        {
+          "id": "cs101",
+          "name": "CS 101 - Intro to Computer Science",
+          "time": "09:00",
+          "endTime": "10:00",
+          "room": "LT1",
+          "attended": true
+        },
+        {
+          "id": "stats301",
+          "name": "STAT 301 - Probability",
+          "time": "13:00",
+          "endTime": "14:00",
+          "room": "LT4",
+          "attended": true
+        }
+      ]
+    },
+    "2026-02-05": {
+      "lectures": [
+        {
+          "id": "math201",
+          "name": "MATH 201 - Linear Algebra",
+          "time": "11:00",
+          "endTime": "12:00",
+          "room": "LT3",
+          "attended": true
+        },
+        {
+          "id": "phys101",
+          "name": "PHYS 101 - Mechanics",
+          "time": "14:00",
+          "endTime": "15:00",
+          "room": "LT2",
+          "attended": true
+        }
+      ]
+    },
+    "2026-02-06": {
+      "lectures": [
+        {
+          "id": "cs101",
+          "name": "CS 101 - Intro to Computer Science",
+          "time": "09:00",
+          "endTime": "10:00",
+          "room": "LT1",
+          "attended": true
+        }
+      ]
+    }
+  }
+}
