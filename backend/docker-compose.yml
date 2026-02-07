@@ -1,17 +1,7 @@
 version: '3.8'
 
 services:
-  service1:
-    build:
-      context: ./ingest
-      dockerfile: Dockerfile
-    container_name: ingest
-    ports:
-      - "8001:8000"   # maps host:container
-    depends_on:
-      - db
-
-  service2:
+  api:
     build:
       context: ./api
       dockerfile: Dockerfile
