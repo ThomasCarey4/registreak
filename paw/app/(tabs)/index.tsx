@@ -1,12 +1,16 @@
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useRef, useState } from "react";
-import { Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Animated, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
 
 export default function AttendScreen() {
   const [code, setCode] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const toastAnim = useRef(new Animated.Value(120)).current;
+  const toastProgress = useRef(new Animated.Value(1)).current;
   const inputRef = useRef<TextInput>(null);
   const colorScheme = useColorScheme() ?? "light";
   const tintColor = Colors[colorScheme].tint;
@@ -16,6 +20,10 @@ export default function AttendScreen() {
     useCallback(() => {
       setCode("");
       setSubmitted(false);
+      setShowToast(false);
+      setIsError(false);
+      toastAnim.setValue(120);
+      toastProgress.setValue(1);
       const timer = setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
@@ -23,12 +31,47 @@ export default function AttendScreen() {
     }, []),
   );
 
+  useEffect(() => {
+    if (showToast) {
+      toastProgress.setValue(1);
+
+      Animated.spring(toastAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 65,
+        friction: 11,
+      }).start();
+
+      Animated.timing(toastProgress, {
+        toValue: 0,
+        duration: 2200,
+        useNativeDriver: false,
+      }).start();
+
+      const timer = setTimeout(() => {
+        Animated.timing(toastAnim, {
+          toValue: 120,
+          duration: 250,
+          useNativeDriver: true,
+        }).start(() => {
+          setShowToast(false);
+          handleReset();
+        });
+      }, 2200);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
   const handleCodeChange = (text: string) => {
     const digits = text.replace(/[^0-9]/g, "").slice(0, 4);
     setCode(digits);
     if (digits.length === 4) {
       Keyboard.dismiss();
+      const correct = digits === "1234";
+      setIsError(!correct);
       setSubmitted(true);
+      setShowToast(true);
     }
   };
 
@@ -46,12 +89,70 @@ export default function AttendScreen() {
 
   return (
     <View className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
+      {showToast && (
+        <Animated.View
+          style={{
+            transform: [{ translateY: toastAnim }],
+            position: "absolute",
+            bottom: 12,
+            left: 16,
+            right: 16,
+            zIndex: 50,
+            borderRadius: 16,
+            overflow: "hidden",
+            backgroundColor: isError ? (isDark ? "#2B1C1C" : "#FFF5F5") : isDark ? "#1C2B1C" : "#F0FAF0",
+            borderWidth: 1,
+            borderColor: isError ? (isDark ? "#4A2D2D" : "#FFCDD2") : isDark ? "#2D4A2D" : "#C8E6C9",
+          }}
+        >
+          <Animated.View
+            style={{
+              height: 3,
+              backgroundColor: isError ? (isDark ? "#F44336" : "#EF5350") : isDark ? "#4CAF50" : "#66BB6A",
+              opacity: 0.5,
+              width: toastProgress.interpolate({
+                inputRange: [0, 1],
+                outputRange: ["0%", "100%"],
+              }),
+            }}
+          />
+          <View className="flex-row items-center px-4 py-3.5">
+            <View
+              className="w-9 h-9 rounded-xl justify-center items-center mr-3"
+              style={{
+                backgroundColor: isError ? (isDark ? "#4A2D2D" : "#FFCDD2") : isDark ? "#2D4A2D" : "#C8E6C9",
+              }}
+            >
+              <Text className="text-base" style={{ color: isError ? "#F44336" : "#4CAF50" }}>
+                {isError ? "✕" : "✓"}
+              </Text>
+            </View>
+            <View className="flex-1">
+              <Text
+                className="text-[14px] font-semibold"
+                style={{ color: isError ? (isDark ? "#EF9A9A" : "#C62828") : isDark ? "#81C784" : "#2E7D32" }}
+              >
+                {isError ? "Invalid Code" : "Attendance Recorded"}
+              </Text>
+              <Text
+                className="text-[12px] mt-0.5"
+                style={{
+                  color: isError ? (isDark ? "#EF9A9A" : "#E57373") : isDark ? "#A5D6A7" : "#66BB6A",
+                  opacity: 0.8,
+                }}
+              >
+                {isError ? "Please check the code and try again" : "You're all set for this lecture"}
+              </Text>
+            </View>
+          </View>
+        </Animated.View>
+      )}
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1 justify-center items-center px-6"
       >
         <View className="items-center mb-12">
-          <Text className="text-[56px] mb-4">🐾</Text>
           <Text className={`text-[32px] font-bold mb-2 text-center ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}>
             Mark Attendance
           </Text>
@@ -68,35 +169,37 @@ export default function AttendScreen() {
               key={i}
               className="w-[68px] h-[84px] rounded-2xl border-2 justify-center items-center"
               style={{
-                borderColor: submitted ? "#4CAF50" : code.length === i ? tintColor : isDark ? "#333" : "#D0D5DD",
-                backgroundColor: submitted ? (isDark ? "#1a3a1a" : "#E8F5E9") : isDark ? "#1C1C1E" : "#F9FAFB",
+                borderColor: submitted
+                  ? isError
+                    ? "#F44336"
+                    : "#4CAF50"
+                  : code.length === i
+                    ? tintColor
+                    : isDark
+                      ? "#333"
+                      : "#D0D5DD",
+                backgroundColor: submitted
+                  ? isError
+                    ? isDark
+                      ? "#3a1a1a"
+                      : "#FBE9E7"
+                    : isDark
+                      ? "#1a3a1a"
+                      : "#E8F5E9"
+                  : isDark
+                    ? "#1C1C1E"
+                    : "#F9FAFB",
               }}
             >
               <Text
                 className={`text-4xl font-bold ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}
-                style={submitted ? { color: "#4CAF50" } : undefined}
+                style={submitted ? { color: isError ? "#F44336" : "#4CAF50" } : undefined}
               >
                 {code[i] || ""}
               </Text>
             </View>
           ))}
         </Pressable>
-
-        {submitted && (
-          <View className="items-center mt-9">
-            <View className="w-14 h-14 rounded-full bg-[#E8F5E9] justify-center items-center mb-3">
-              <Text className="text-[28px] font-bold text-[#4CAF50]">✓</Text>
-            </View>
-            <Text className="text-xl font-semibold mb-5 text-[#4CAF50]">Attendance Recorded!</Text>
-            <Pressable
-              onPress={handleReset}
-              className="px-6 py-3 rounded-[10px]"
-              style={{ backgroundColor: tintColor }}
-            >
-              <Text className="text-white font-semibold text-[15px]">Enter Another Code</Text>
-            </Pressable>
-          </View>
-        )}
 
         <TextInput
           ref={inputRef}
