@@ -1,0 +1,2 @@
+-- Initial database setup
+-- Add any initialization scripts here
