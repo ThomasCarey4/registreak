@@ -206,7 +206,7 @@ export default function LeaderboardScreen() {
             <Text style={{ fontSize: 32, fontWeight: "bold", marginBottom: 4, color: colors.text }}>Leaderboard</Text>
             {leaderboardData ? (
               <Text style={{ fontSize: 15, color: colors.subtleText }}>
-                {leaderboardData.courseName} · {leaderboardData.totalLectures} lectures
+                {leaderboardData.courseName}
               </Text>
             ) : (
               !loading && (
