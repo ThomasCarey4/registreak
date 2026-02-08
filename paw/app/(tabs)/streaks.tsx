@@ -1,10 +1,12 @@
 import { BottomFade, useBottomFade } from "@/components/bottom-fade";
+import { FireCelebration } from "@/components/fire-celebration";
 import { RadialProgress } from "@/components/radial-progress";
+import { RollingNumber } from "@/components/rolling-number";
 import { Colors } from "@/constants/theme";
 import { useAuth } from "@/context/auth-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Animated, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -160,6 +162,20 @@ export default function StreaksScreen() {
   const isDark = colorScheme === "dark";
   const colors = Colors[colorScheme];
   const { user } = useAuth();
+  const { celebrate } = useLocalSearchParams<{ celebrate?: string }>();
+  const [showCelebration, setShowCelebration] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (celebrate === "true") {
+      setShowCelebration(true);
+      // Clear the param so re-visiting doesn't re-trigger
+      router.setParams({ celebrate: "" });
+      // Auto-hide fire after animation completes
+      const timer = setTimeout(() => setShowCelebration(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [celebrate]);
 
   // Live data from the backend
   const [streak, setStreak] = useState(0);
@@ -255,6 +271,7 @@ export default function StreaksScreen() {
 
   return (
     <View className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
+      <FireCelebration visible={showCelebration} />
       <SafeAreaView className="flex-1" edges={["top"]}>
         <ScrollView
           className="flex-1"
@@ -287,16 +304,14 @@ export default function StreaksScreen() {
             >
               {/* Main streak display */}
               <View className="p-5 items-center">
-                <Text
-                  className="font-extrabold"
-                  style={{
-                    fontSize: 56,
-                    lineHeight: 64,
-                    color: isDark ? "#ECEDEE" : "#374151",
-                  }}
-                >
-                  {streak}
-                </Text>
+                <RollingNumber
+                  value={streak}
+                  animate={showCelebration}
+                  fontSize={56}
+                  color={isDark ? "#ECEDEE" : "#374151"}
+                  fontWeight="800"
+                  delay={300}
+                />
 
                 <Text
                   className="font-semibold uppercase tracking-[3px]"
