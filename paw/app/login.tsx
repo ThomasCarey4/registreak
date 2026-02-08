@@ -1,35 +1,29 @@
 import React, { useState } from 'react';
-import { Alert, Button, StyleSheet, Switch, TextInput, View } from 'react-native';
+import { Alert, Button, StyleSheet, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useAuth } from '@/context/auth-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const { login } = useAuth();
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [isStaff, setIsStaff] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   function submit() {
     (async () => {
       try {
-        const res = await fetch('http://localhost:5000/account/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: email, password }),
-        });
-
-        const json = await res.json();
-        if (!res.ok) {
-          Alert.alert('Login failed', json.error || JSON.stringify(json));
-          return;
-        }
-
-        Alert.alert('Login', json.message || 'Logged in');
+        setIsLoading(true);
+        await login(username, password);
+        Alert.alert('Login', 'Logged in successfully');
         router.push('/');
       } catch (err) {
-        Alert.alert('Network error', String(err));
+        Alert.alert('Login failed', String(err));
+      } finally {
+        setIsLoading(false);
       }
     })();
   }
@@ -38,14 +32,14 @@ export default function LoginScreen() {
     <ThemedView style={styles.container}>
       <ThemedText type="title">Sign in</ThemedText>
 
-      <ThemedText type="subtitle">Email</ThemedText>
+      <ThemedText type="subtitle">Username or Email</ThemedText>
       <TextInput
-        value={email}
-        onChangeText={setEmail}
+        value={username}
+        onChangeText={setUsername}
         style={styles.input}
-        keyboardType="email-address"
         autoCapitalize="none"
-        placeholder="you@example.com"
+        placeholder="username@example.com"
+        editable={!isLoading}
       />
 
       <ThemedText type="subtitle">Password</ThemedText>
@@ -55,14 +49,10 @@ export default function LoginScreen() {
         style={styles.input}
         secureTextEntry
         placeholder="••••••••"
+        editable={!isLoading}
       />
 
-      <View style={styles.row}>
-        <ThemedText>Staff account</ThemedText>
-        <Switch value={isStaff} onValueChange={setIsStaff} />
-      </View>
-
-      <Button title="Sign in" onPress={submit} />
+      <Button title={isLoading ? 'Signing in...' : 'Sign in'} onPress={submit} disabled={isLoading} />
     </ThemedView>
   );
 }
@@ -78,11 +68,5 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     padding: 8,
     borderRadius: 6,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginVertical: 8,
   },
 });

@@ -8,6 +8,9 @@ class Users(db.Model):
     username = db.Column(db.Text, nullable=False)
     password = db.Column(db.Text, nullable=False)
     is_staff = db.Column('isStaff', db.Boolean, default=False, nullable=False)
+    current_streak = db.Column(db.Integer, default=0, nullable=False)
+    longest_streak = db.Column(db.Integer, default=0, nullable=False)
+    streak_last_date = db.Column(db.Date, nullable=True)
 
     # Relationship to lecture attendance
     attendances = db.relationship('LectureAttendance', back_populates='user')

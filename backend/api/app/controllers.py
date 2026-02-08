@@ -2,8 +2,8 @@
 Controllers for handling attendance verification business logic.
 """
 from flask import jsonify, current_app
-from datetime import datetime, timezone
-from .models import Lecture, LectureAttendance
+from datetime import datetime, timezone, date, time, timedelta
+from .models import Lecture, LectureAttendance, Users
 from .utils import generate_lecture_code, find_lecture_by_code
 from . import db
 
