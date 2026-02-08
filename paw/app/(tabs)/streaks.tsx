@@ -282,21 +282,21 @@ export default function StreaksScreen() {
               <View className="flex-row py-4 px-2">
                 <View className="flex-1 items-center">
                   <Text className="font-bold text-[22px] text-foreground">{bestStreak}</Text>
-                  <Text className="font-medium mt-0.5 text-[11px] text-foreground/38">Best Streak</Text>
+                  <Text className="font-medium mt-0.5 text-[11px] text-foreground">Best Streak</Text>
                 </View>
 
                 <View className="w-[1px] bg-foreground/5" />
 
                 <View className="flex-1 items-center">
                   <Text className="font-bold text-[22px] text-foreground">{overallRate}%</Text>
-                  <Text className="font-medium mt-0.5 text-[11px] text-foreground/38">Attendance</Text>
+                  <Text className="font-medium mt-0.5 text-[11px] text-foreground">Attendance</Text>
                 </View>
 
                 <View className="w-[1px] bg-foreground/5" />
 
                 <View className="flex-1 items-center">
                   <Text className="font-bold text-[22px] text-foreground">{perfectDays}</Text>
-                  <Text className="font-medium mt-0.5 text-[11px] text-foreground/38">Perfect Days</Text>
+                  <Text className="font-medium mt-0.5 text-[11px] text-foreground">Perfect Days</Text>
                 </View>
               </View>
             </View>
