@@ -163,16 +163,11 @@ export default function LeaderboardScreen() {
           if (!cancelled) setLoading(false);
         }
       })();
-      return () => { cancelled = true; };
-    }, [selectedCourse])
+      return () => {
+        cancelled = true;
+      };
+    }, [selectedCourse]),
   );
-
-  const handleCourseChange = (code: string) => {
-    if (code !== selectedCourse) {
-      setSelectedCourse(code);
-      setLeaderboardData(null);
-    }
-  };
 
   const showTop = leaderboardData?.showTop ?? 10;
   const displayItems = useMemo(
@@ -205,113 +200,74 @@ export default function LeaderboardScreen() {
           <View className="px-5 pt-5 pb-2">
             <Text style={{ fontSize: 32, fontWeight: "bold", marginBottom: 4, color: colors.text }}>Leaderboard</Text>
             {leaderboardData ? (
-              <Text style={{ fontSize: 15, color: colors.subtleText }}>
-                {leaderboardData.courseName}
-              </Text>
+              <Text style={{ fontSize: 15, color: colors.subtleText }}>{leaderboardData.courseName}</Text>
             ) : (
-              !loading && (
-                <Text style={{ fontSize: 15, color: colors.subtleText }}>No course data available</Text>
-              )
+              !loading && <Text style={{ fontSize: 15, color: colors.subtleText }}>No course data available</Text>
             )}
           </View>
-
-          {/* Course selector (if multiple courses) */}
-          {courses.length > 1 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4 pb-2">
-              {courses.map((c) => (
-                <TouchableOpacity
-                  key={c.code}
-                  onPress={() => handleCourseChange(c.code)}
-                  className="mr-2 px-4 py-2 rounded-full"
-                  style={{
-                    backgroundColor: c.code === selectedCourse
-                      ? colors.tint
-                      : isDark ? "#1C1C1E" : "#F3F4F6",
-                  }}
-                >
-                  <Text
-                    className="text-sm font-semibold"
-                    style={{
-                      color: c.code === selectedCourse
-                        ? (isDark ? colors.background : "#fff")
-                        : colors.text,
-                    }}
-                  >
-                    {c.code}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
-
-          {loading && (
-            <View className="py-20 items-center">
-              <ActivityIndicator size="large" color={colors.tint} />
-            </View>
-          )}
 
           {/* Top 10 List */}
           {!loading && (
             <View className="px-4 pt-3 gap-2">
-            {topItems.map((item) => {
-              const { rank, student, isCurrentUser } = item;
-              if (!student || !rank) return null;
+              {topItems.map((item) => {
+                const { rank, student, isCurrentUser } = item;
+                if (!student || !rank) return null;
 
-              const medal = MEDALS[rank];
+                const medal = MEDALS[rank];
 
-              return (
-                <View
-                  key={student.id}
-                  className="flex-row items-center rounded-2xl p-3.5"
-                  style={{
-                    backgroundColor: colors.card,
-                    borderWidth: isCurrentUser ? 1.5 : 0,
-                    borderColor: isCurrentUser ? colors.tint : "transparent",
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 1 },
-                    shadowOpacity: isDark ? 0.2 : 0.04,
-                    shadowRadius: 6,
-                    elevation: 2,
-                  }}
-                >
-                  {/* Rank / Medal */}
-                  <View className="w-9 items-center mr-3">
-                    {medal ? (
-                      <Text className="text-xl">{medal}</Text>
-                    ) : (
-                      <Text className="text-[15px] font-bold" style={{ color: colors.rankText }}>
-                        {rank}
-                      </Text>
-                    )}
-                  </View>
-
-                  {/* Name + YOU badge */}
-                  <View className="flex-1 flex-row items-center gap-2 mr-2">
-                    <Text
-                      className={`text-[15px] ${isCurrentUser ? "font-bold" : "font-medium"}`}
-                      style={{ color: colors.text }}
-                      numberOfLines={1}
-                    >
-                      {student.name}
-                    </Text>
-                    {isCurrentUser && (
-                      <View className="px-1.5 py-0.5 rounded" style={{ backgroundColor: colors.tint }}>
-                        <Text
-                          className="text-[9px] font-extrabold tracking-wide"
-                          style={{ color: isDark ? colors.background : "#ffffff" }}
-                        >
-                          YOU
+                return (
+                  <View
+                    key={student.id}
+                    className="flex-row items-center rounded-2xl p-3.5"
+                    style={{
+                      backgroundColor: colors.card,
+                      borderWidth: isCurrentUser ? 1.5 : 0,
+                      borderColor: isCurrentUser ? colors.tint : "transparent",
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: isDark ? 0.2 : 0.04,
+                      shadowRadius: 6,
+                      elevation: 2,
+                    }}
+                  >
+                    {/* Rank / Medal */}
+                    <View className="w-9 items-center mr-3">
+                      {medal ? (
+                        <Text className="text-xl">{medal}</Text>
+                      ) : (
+                        <Text className="text-[15px] font-bold" style={{ color: colors.rankText }}>
+                          {rank}
                         </Text>
-                      </View>
-                    )}
-                  </View>
+                      )}
+                    </View>
 
-                  {/* Streak */}
-                  <StreakBadge streak={student.streak} isDark={isDark} />
-                </View>
-              );
-            })}
-          </View>
+                    {/* Name + YOU badge */}
+                    <View className="flex-1 flex-row items-center gap-2 mr-2">
+                      <Text
+                        className={`text-[15px] ${isCurrentUser ? "font-bold" : "font-medium"}`}
+                        style={{ color: colors.text }}
+                        numberOfLines={1}
+                      >
+                        {student.name}
+                      </Text>
+                      {isCurrentUser && (
+                        <View className="px-1.5 py-0.5 rounded" style={{ backgroundColor: colors.tint }}>
+                          <Text
+                            className="text-[9px] font-extrabold tracking-wide"
+                            style={{ color: isDark ? colors.background : "#ffffff" }}
+                          >
+                            YOU
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Streak */}
+                    <StreakBadge streak={student.streak} isDark={isDark} />
+                  </View>
+                );
+              })}
+            </View>
           )}
 
           {/* Current user position (when outside top 10) */}
