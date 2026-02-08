@@ -184,21 +184,114 @@ with app.app_context():
   
   db.session.commit()
   
-  # Update some records to attended=True (for past lectures as examples)
-  print("Updating some attendance records to attended=True...")
-  past_lectures = Lecture.query.filter(Lecture.start_time < datetime.now(timezone.utc)).all()
-  
-  for lecture in past_lectures:
-    # Get all attendance records for this lecture
-    attendances = LectureAttendance.query.filter_by(lecture_id=lecture.id).all()
-    
-    # Randomly mark 70-90% as actually attended
-    for attendance in attendances:
-      if random.random() < 0.8:  # 80% actually attend
-        attendance.is_attended = True
-  
+  # ── Build realistic streaks for every student ──────────────────────────
+  print("Building realistic streaks for all students...")
+  now = datetime.now(timezone.utc)
+
+  def generate_capped_random(length, max_run):
+    """Return a list of bools with no True-run longer than max_run."""
+    result = []
+    run = 0
+    for _ in range(length):
+      if run >= max_run:
+        result.append(False)
+        run = 0
+      else:
+        val = random.random() < 0.7
+        result.append(val)
+        run = run + 1 if val else 0
+    return result
+
+  def build_attendance_pattern(n, target_current, target_longest):
+    """
+    Return a list of n bools whose trailing True-run == target_current
+    and whose maximum True-run == target_longest.
+    """
+    if n == 0:
+      return []
+
+    # Clamp to available lectures
+    target_current = min(target_current, n)
+    target_longest = min(target_longest, n)
+    target_longest = max(target_longest, target_current)
+
+    # Index of the mandatory False that breaks the current streak
+    break_idx = n - target_current - 1  # may be < 0
+
+    if break_idx < 0:
+      # Not enough lectures for a break – everything is the current streak
+      return [True] * n
+
+    if target_longest == target_current:
+      # Only need: [random (capped)] + [False] + [True * current]
+      pre = generate_capped_random(break_idx, target_longest - 1)
+      return pre + [False] + [True] * target_current
+
+    # target_longest > target_current → place the best-run just before the break
+    run_start = break_idx - target_longest
+    if run_start < 0:
+      # Shrink longest to fit
+      run_start = 0
+      target_longest = break_idx  # everything from 0..break_idx-1
+
+    if run_start > 0:
+      pre = generate_capped_random(run_start - 1, target_longest - 1)
+      pre.append(False)  # break before the longest run
+    else:
+      pre = []
+
+    longest_block = [True] * target_longest
+    return pre + longest_block + [False] + [True] * target_current
+
+  all_students = students + dr_johnson_students
+  for student_data in all_students:
+    sid = student_data['student_id']
+
+    # Enrolled past lectures for this student, ordered by start_time
+    past_attendances = (
+      LectureAttendance.query
+      .join(Lecture)
+      .filter(LectureAttendance.user_id == sid)
+      .filter(Lecture.start_time < now)
+      .order_by(Lecture.start_time.asc())
+      .all()
+    )
+
+    n = len(past_attendances)
+    if n == 0:
+      continue
+
+    target_longest = random.randint(10, 20)
+    target_current = random.randint(5, min(20, target_longest))
+
+    pattern = build_attendance_pattern(n, target_current, target_longest)
+
+    for att, attended in zip(past_attendances, pattern):
+      att.is_attended = attended
+
+    # Compute the actual streaks from the pattern we just wrote
+    # (handles edge-cases where targets were clamped)
+    actual_current = 0
+    for v in reversed(pattern):
+      if v:
+        actual_current += 1
+      else:
+        break
+    actual_longest = 0
+    run = 0
+    for v in pattern:
+      if v:
+        run += 1
+        actual_longest = max(actual_longest, run)
+      else:
+        run = 0
+
+    user_obj = Users.query.get(sid)
+    user_obj.current_streak = actual_current
+    user_obj.longest_streak = actual_longest
+
   db.session.commit()
-  
+
   print("Database populated with dummy data")
   print(f"- {len(students)} regular students created")
   print(f"- {len(dr_johnson_students)} Dr. Johnson students (100-150) created")
@@ -209,3 +302,4 @@ with app.app_context():
   print(f"- {LectureAttendance.query.count()} attendance records created")
   print(f"- Lecturer 69 has {len(lecturer_69_lectures)} lectures scheduled")
   print(f"- Students 100-150 assigned to all {len(lecturer_69_lectures)} Dr. Johnson lectures")
+  print(f"- All {len(all_students)} students have realistic streaks (current 5-20, best 10-20)")
