@@ -39,7 +39,6 @@ class Module(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text, nullable=False)
     course_code = db.Column(db.Text, db.ForeignKey('courses.code'))
-    module_code = db.Column(db.Text, nullable=False)
 
     # Relationships
     course = db.relationship('Course', back_populates='modules')

@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "paw",
+    "scheme": "paw",
     "slug": "paw",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "paw",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -14,7 +14,12 @@
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": ["paw"]
+          }
+        ]
       }
     },
     "android": {
@@ -34,8 +39,7 @@
           "autoVerify": true,
           "data": [
             {
-              "scheme": "paw",
-              "host": "attend"
+              "scheme": "paw"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]

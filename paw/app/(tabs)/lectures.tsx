@@ -13,7 +13,6 @@ const REFRESH_INTERVAL = 30;
 interface Lecture {
   lecture_id: number;
   module_id: number;
-  module_code: string;
   module_name: string;
   start_time: string;
   end_time: string;
@@ -136,7 +135,7 @@ export default function LecturesScreen() {
           <View key={lecture.lecture_id} className="mb-6 overflow-hidden rounded-2xl border border-divider">
             <View className="bg-foreground/5 px-5 py-4">
               <Text className="text-foreground text-[20px] font-bold">
-                {lecture.module_code} - {lecture.module_name}
+                {lecture.module_name}
               </Text>
               <Text className="text-foreground/50 mt-1 text-[13px]">
                 {formatTime(lecture.start_time)} – {formatTime(lecture.end_time)}
@@ -145,7 +144,7 @@ export default function LecturesScreen() {
 
             <View className="mt-6 items-center">
               <View className="rounded-2xl bg-white p-4">
-                <QRCode value={`paw://(tabs)/attend?code=${lecture.code}`} size={180} />
+                <QRCode value={`paw://attend?code=${lecture.code}`} size={180} />
               </View>
             </View>
             <View className="items-center px-5 pb-6 pt-8">

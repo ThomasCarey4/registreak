@@ -9,6 +9,7 @@ import { useAuth } from "@/context/auth-context";
 
 export default function AttendScreen() {
   const { user } = useAuth();
+  const params = useLocalSearchParams();
   const [cells, setCells] = useState<(string | null)[]>([null, null, null, null]);
   const [submitted, setSubmitted] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -21,37 +22,31 @@ export default function AttendScreen() {
   const { colorScheme } = useColorScheme();
   const colors = themeColors[colorScheme ?? "light"];
   const router = useRouter();
-  const params = useLocalSearchParams();
   const hasProcessedDeepLink = useRef(false);
 
   // Handle deep link code parameter
   useEffect(() => {
-    if (params.code && typeof params.code === 'string' && !hasProcessedDeepLink.current) {
-      const code = params.code;
-
-      // Validate it's exactly 4 digits
-      if (/^\d{4}$/.test(code)) {
-        hasProcessedDeepLink.current = true;
-
-        // Auto-populate cells
-        const digits = code.split('');
-        setCells([digits[0], digits[1], digits[2], digits[3]]);
-
-        // Auto-submit after a short delay to show the UI
-        setTimeout(() => {
-          submitCode(code);
-        }, 500);
+    if (params.code && typeof params.code === "string" && !hasProcessedDeepLink.current) {
+      hasProcessedDeepLink.current = true;
+      const code = params.code.replace(/[^0-9]/g, "").slice(0, 4);
+      
+      if (code.length === 4) {
+        const digits = code.split("");
+        setCells(digits);
+        submitCode(code);
       }
     }
   }, [params.code]);
 
   // Auto-open keyboard only on initial app launch
   useEffect(() => {
-    const timer = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!params.code) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [params.code]);
 
   useEffect(() => {
     if (showToast) {
@@ -91,10 +86,8 @@ export default function AttendScreen() {
     setEditIndex(null);
 
     try {
-      // Call the API to verify attendance
       await apiService.verifyAttendance(finalCode);
 
-      // Success - show success overlay
       setIsError(false);
       setSubmitted(true);
       Keyboard.dismiss();
@@ -103,24 +96,23 @@ export default function AttendScreen() {
       setTimeout(() => {
         setCells([null, null, null, null]);
         setSubmitted(false);
+        hasProcessedDeepLink.current = false;
       }, 400);
     } catch (error) {
-      // Failed - show error toast
       setIsError(true);
       setSubmitted(true);
       setShowToast(true);
+      hasProcessedDeepLink.current = false;
     }
   };
 
   const handleCodeChange = (text: string) => {
-    // Clear error state once user starts typing
     if (submitted && isError) {
       setSubmitted(false);
       setIsError(false);
     }
 
     if (text.length > 1) {
-      // Digit typed (text is sentinel "x" + new char)
       const newDigit = text.slice(1).replace(/[^0-9]/g, "")[0];
       if (!newDigit || activeIndex > 3) return;
 
@@ -138,23 +130,19 @@ export default function AttendScreen() {
         setEditIndex(next < 4 ? next : null);
       }
     } else if (text.length === 0) {
-      // Backspace
       if (editIndex !== null) {
         if (cells[editIndex] !== null) {
           const newCells = [...cells];
           newCells[editIndex] = null;
           setCells(newCells);
-          // If no digits after this cell, go back instead of staying
           const hasDigitsAfter = newCells.slice(editIndex + 1).some((c) => c !== null);
           if (!hasDigitsAfter) {
-            // Move back to previous filled cell, or exit edit mode
             let prev = editIndex - 1;
             while (prev >= 0 && newCells[prev] === null) prev--;
             setEditIndex(prev >= 0 ? prev : null);
           }
         }
       } else {
-        // Normal mode: clear rightmost filled cell
         for (let i = 3; i >= 0; i--) {
           if (cells[i] !== null) {
             const newCells = [...cells];
@@ -180,9 +168,9 @@ export default function AttendScreen() {
     setSubmitted(false);
   };
 
-if (user?.is_staff) {
-  return <Redirect href="/lectures" />;
-}
+  if (user?.is_staff) {
+    return <Redirect href="/lectures" />;
+  }
 
   return (
     <Pressable onPress={Keyboard.dismiss} className="flex-1 bg-background">
@@ -253,9 +241,6 @@ if (user?.is_staff) {
               : isActive
                 ? colors.tint
                 : undefined;
-            const cellBg = submitted
-              ? undefined // handled by className
-              : undefined; // handled by className
             const bgClass = submitted ? (isError ? "bg-error-cell-bg" : "bg-success-cell-bg") : "bg-digit-bg";
             const borderClass = !submitted && !isActive ? "border-digit-border" : "";
 
