@@ -1,8 +1,6 @@
 import { SuccessOverlay } from "@/components/success-overlay";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import * as Haptics from "expo-haptics";
-import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
 
@@ -19,21 +17,13 @@ export default function AttendScreen() {
   const tintColor = Colors[colorScheme].tint;
   const isDark = colorScheme === "dark";
 
-  useFocusEffect(
-    useCallback(() => {
-      setCode("");
-      setSubmitted(false);
-      setShowSuccess(false);
-      setShowToast(false);
-      setIsError(false);
-      toastAnim.setValue(120);
-      toastProgress.setValue(1);
-      const timer = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timer);
-    }, []),
-  );
+  // Auto-open keyboard only on initial app launch
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (showToast) {
@@ -76,7 +66,6 @@ export default function AttendScreen() {
       setIsError(!correct);
       setSubmitted(true);
       if (correct) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         setShowSuccess(true);
         // Clear digits immediately so they're gone behind the overlay
         setTimeout(() => {
@@ -98,11 +87,10 @@ export default function AttendScreen() {
   const handleReset = () => {
     setCode("");
     setSubmitted(false);
-    setTimeout(() => inputRef.current?.focus(), 100);
   };
 
   return (
-    <View className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
+    <Pressable onPress={Keyboard.dismiss} className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
       <SuccessOverlay
         visible={showSuccess}
         onComplete={() => {
@@ -172,11 +160,11 @@ export default function AttendScreen() {
         className="flex-1 justify-center items-center px-6"
       >
         <View className="items-center mb-12">
-          <Text className={`text-[32px] font-bold mb-2 text-center ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}>
+          <Text className={`text-[32px] font-bold mb-2 text-center ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
             Mark Attendance
           </Text>
           <Text
-            className={`text-base text-center leading-[22px] ${isDark ? "text-[#ECEDEE]/50" : "text-[#11181C]/50"}`}
+            className={`text-base text-center leading-[22px] ${isDark ? "text-[#ECEDEE]/50" : "text-[#374151]/50"}`}
           >
             Enter the 4-digit code shown in your lecture
           </Text>
@@ -211,7 +199,7 @@ export default function AttendScreen() {
               }}
             >
               <Text
-                className={`text-4xl font-bold ${isDark ? "text-[#ECEDEE]" : "text-[#11181C]"}`}
+                className={`text-4xl font-bold ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}
                 style={submitted ? { color: isError ? "#F44336" : "#4CAF50" } : undefined}
               >
                 {code[i] || ""}
@@ -226,11 +214,10 @@ export default function AttendScreen() {
           onChangeText={handleCodeChange}
           keyboardType="number-pad"
           maxLength={4}
-          autoFocus
           className="absolute opacity-0 h-0 w-0"
           caretHidden
         />
       </KeyboardAvoidingView>
-    </View>
+    </Pressable>
   );
 }
