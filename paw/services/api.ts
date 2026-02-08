@@ -75,8 +75,14 @@ class APIService {
     }
 
     async logout() {
-        await this.clearToken();
-        return this.request('/account/logout', { method: 'POST' });
+        try {
+            // Call server logout first while we still have the token
+            await this.request('/account/logout', { method: 'POST' });
+        } catch {
+            // Ignore errors - we're logging out anyway
+        } finally {
+            await this.clearToken();
+        }
     }
 
     // User endpoints

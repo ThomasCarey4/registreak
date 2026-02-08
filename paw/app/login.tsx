@@ -1,72 +1,121 @@
 import React, { useState } from 'react';
-import { Alert, Button, StyleSheet, TextInput, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useAuth } from '@/context/auth-context';
-
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/theme';
 
 export default function LoginScreen() {
-  const router = useRouter();
   const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const colorScheme = useColorScheme() ?? 'light';
+  const isDark = colorScheme === 'dark';
+  const tintColor = Colors[colorScheme].tint;
 
-  function submit() {
-    (async () => {
-      try {
-        setIsLoading(true);
-        await login(username, password);
-        Alert.alert('Login', 'Logged in successfully');
-        router.push('/');
-      } catch (err) {
-        Alert.alert('Login failed', String(err));
-      } finally {
-        setIsLoading(false);
-      }
-    })();
+  async function submit() {
+    if (!username.trim() || !password.trim()) {
+      Alert.alert('Error', 'Please enter username and password');
+      return;
+    }
+    try {
+      setIsLoading(true);
+      await login(username, password);
+    } catch (err) {
+      Alert.alert('Login failed', String(err));
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">Sign in</ThemedText>
+    <View style={[styles.container, { backgroundColor: isDark ? '#151718' : '#fff' }]}>  
+      <View style={styles.inner}>
+        <Text style={[styles.emoji]}>🐱</Text>
+        <Text style={[styles.title, { color: isDark ? '#fff' : '#000' }]}>Lucky Cat</Text>
+        <Text style={[styles.subtitle, { color: isDark ? '#aaa' : '#666' }]}>Sign in to mark attendance</Text>
 
-      <ThemedText type="subtitle">Username or Email</ThemedText>
-      <TextInput
-        value={username}
-        onChangeText={setUsername}
-        style={styles.input}
-        autoCapitalize="none"
-        placeholder="username@example.com"
-        editable={!isLoading}
-      />
+        <TextInput
+          value={username}
+          onChangeText={setUsername}
+          style={[styles.input, {
+            backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
+            color: isDark ? '#fff' : '#000',
+            borderColor: isDark ? '#444' : '#ddd',
+          }]}
+          autoCapitalize="none"
+          placeholder="Username or Student ID"
+          placeholderTextColor={isDark ? '#777' : '#999'}
+          editable={!isLoading}
+        />
 
-      <ThemedText type="subtitle">Password</ThemedText>
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-        secureTextEntry
-        placeholder="••••••••"
-        editable={!isLoading}
-      />
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          style={[styles.input, {
+            backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
+            color: isDark ? '#fff' : '#000',
+            borderColor: isDark ? '#444' : '#ddd',
+          }]}
+          secureTextEntry
+          placeholder="Password"
+          placeholderTextColor={isDark ? '#777' : '#999'}
+          editable={!isLoading}
+          onSubmitEditing={submit}
+        />
 
-      <Button title={isLoading ? 'Signing in...' : 'Sign in'} onPress={submit} disabled={isLoading} />
-    </ThemedView>
+        <Pressable
+          onPress={submit}
+          disabled={isLoading}
+          style={[styles.button, { backgroundColor: tintColor, opacity: isLoading ? 0.6 : 1 }]}
+        >
+          <Text style={styles.buttonText}>{isLoading ? 'Signing in...' : 'Sign In'}</Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  inner: {
+    alignItems: 'center',
     gap: 12,
+    width: '100%',
+  },
+  emoji: {
+    fontSize: 56,
+    marginBottom: 4,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+  },
+  subtitle: {
+    fontSize: 15,
+    marginBottom: 16,
   },
   input: {
+    width: '100%',
     borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 8,
-    borderRadius: 6,
+    padding: 14,
+    borderRadius: 12,
+    fontSize: 16,
+  },
+  button: {
+    width: '100%',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: '600',
   },
 });
