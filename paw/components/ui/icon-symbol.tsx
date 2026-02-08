@@ -21,6 +21,7 @@ const MAPPING = {
     "number.square.fill": "dialpad",
     "flame.fill": "local-fire-department",
     "trophy.fill": "emoji-events",
+    "person.fill": "person",
 } as IconMapping;
 
 /**
