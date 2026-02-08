@@ -1,12 +1,14 @@
 import { SuccessOverlay } from "@/components/success-overlay";
 import { themeColors } from "@/constants/colors";
 import { useColorScheme } from "nativewind";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Keyboard, Pressable, Text, TextInput, View } from "react-native";
 import { apiService } from "@/services/api";
+import { useAuth } from "@/context/auth-context";
 
 export default function AttendScreen() {
+  const { user } = useAuth();
   const [cells, setCells] = useState<(string | null)[]>([null, null, null, null]);
   const [submitted, setSubmitted] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -177,6 +179,10 @@ export default function AttendScreen() {
   const handleReset = () => {
     setSubmitted(false);
   };
+
+if (user?.is_staff) {
+  return <Redirect href="/lectures" />;
+}
 
   return (
     <Pressable onPress={Keyboard.dismiss} className="flex-1 bg-background">

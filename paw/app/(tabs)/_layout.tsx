@@ -1,25 +1,14 @@
 import { Tabs } from "expo-router";
 import React from "react";
-
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { themeColors } from "@/constants/colors";
 import { useColorScheme } from "nativewind";
 import { useAuth } from "@/context/auth-context";
-import { SafeAreaView } from "react-native-safe-area-context";
-import LecturesScreen from "../lectures";
+
 export default function TabLayout() {
   const { colorScheme } = useColorScheme();
   const { user } = useAuth();
-
-  // If user is an instructor, render the Lectures screen full-screen (no bottom tabs)
-  if (user?.is_staff) {
-    return (
-      <SafeAreaView style={{ flex: 1 }}>
-        <LecturesScreen />
-      </SafeAreaView>
-    );
-  }
 
   // Otherwise render the regular tab layout for students
   return (
@@ -36,26 +25,40 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="attend"
         options={{
           title: "Attend",
+          href: user?.is_staff ? null : "/attend",
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="number.square.fill" color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="lectures"
+        options={{
+          title: "Lectures",
+          href: !user?.is_staff ? null : "/lectures",
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="graduationcap.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="streaks"
         options={{
           title: "Streaks",
+          href: user?.is_staff ? null : "/streaks",
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="flame.fill" color={color} />,
         }}
       />
+
       <Tabs.Screen
         name="leaderboard"
         options={{
           title: "Leaderboard",
+          href: user?.is_staff ? null : "/leaderboard",
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="trophy.fill" color={color} />,
         }}
       />
+
       <Tabs.Screen
         name="account"
         options={{

@@ -86,16 +86,6 @@ export default function LecturesScreen() {
     fetchLectures();
   }, [fetchLectures]);
 
-  const handleEndSession = async () => {
-    try {
-      await logout();
-      setSessionEnded(true);
-      setLectures([]);
-    } catch {
-      setError("Failed to end session");
-    }
-  };
-
   const formatTime = (isoString: string): string => {
     try {
       const date = new Date(isoString);
@@ -155,7 +145,7 @@ export default function LecturesScreen() {
 
             <View className="mt-6 items-center">
               <View className="rounded-2xl bg-white p-4">
-                <QRCode value={`paw://(tabs)?code=${lecture.code}`} size={180} />
+                <QRCode value={`paw://(tabs)/attend?code=${lecture.code}`} size={180} />
               </View>
             </View>
             <View className="items-center px-5 pb-6 pt-8">
@@ -180,15 +170,6 @@ export default function LecturesScreen() {
             </View>
           </View>
         ))}
-
-        {lectures.length > 0 && (
-          <Pressable
-            className="mt-2 items-center rounded-xl py-4 active:opacity-80 bg-foreground"
-            onPress={handleEndSession}
-          >
-            <Text className="text-background text-[17px] font-semibold">End Session</Text>
-          </Pressable>
-        )}
       </ScrollView>
     </SafeAreaView>
   );

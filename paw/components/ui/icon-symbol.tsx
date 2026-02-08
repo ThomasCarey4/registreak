@@ -14,12 +14,12 @@ type IconSymbolName = keyof typeof MAPPING;
  * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
  */
 const MAPPING = {
-    "number.square.fill": "dialpad",
-    "flame.fill": "local-fire-department",
-    "trophy.fill": "emoji-events",
-    "person.fill": "person"
+  "number.square.fill": "dialpad",
+  "flame.fill": "local-fire-department",
+  "trophy.fill": "emoji-events",
+  "person.fill": "person",
+  "graduationcap.fill": "school",
 } as IconMapping;
-
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
  * This ensures a consistent look across platforms, and optimal resource usage.

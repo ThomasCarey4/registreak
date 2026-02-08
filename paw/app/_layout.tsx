@@ -33,7 +33,7 @@ function AppContent() {
         if (/^\d{4}$/.test(code)) {
           // Navigate to attendance screen with code parameter
           router.push({
-            pathname: '/(tabs)',
+            pathname: '/(tabs)/attend',
             params: { code }
           });
         }
