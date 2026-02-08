@@ -93,7 +93,19 @@ class APIService {
 
   // Attendance endpoints
   async getVerificationCode() {
-    return this.request("/code", { method: "GET" });
+    return this.request<{
+      success: boolean;
+      lectures?: {
+        lecture_id: number;
+        module_id: number;
+        module_name: string;
+        start_time: string;
+        end_time: string;
+        code: string;
+      }[];
+      message?: string;
+      error?: string;
+    }>("/code", { method: "GET" });
   }
 
   async verifyAttendance(code: string) {

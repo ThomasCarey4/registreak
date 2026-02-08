@@ -1,7 +1,7 @@
 import { SuccessOverlay } from "@/components/success-overlay";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Keyboard, Pressable, Text, TextInput, View } from "react-native";
 import { apiService } from "@/services/api";
@@ -20,6 +20,29 @@ export default function AttendScreen() {
   const tintColor = Colors[colorScheme].tint;
   const isDark = colorScheme === "dark";
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const hasProcessedDeepLink = useRef(false);
+
+  // Handle deep link code parameter
+  useEffect(() => {
+    if (params.code && typeof params.code === 'string' && !hasProcessedDeepLink.current) {
+      const code = params.code;
+
+      // Validate it's exactly 4 digits
+      if (/^\d{4}$/.test(code)) {
+        hasProcessedDeepLink.current = true;
+
+        // Auto-populate cells
+        const digits = code.split('');
+        setCells([digits[0], digits[1], digits[2], digits[3]]);
+
+        // Auto-submit after a short delay to show the UI
+        setTimeout(() => {
+          submitCode(code);
+        }, 500);
+      }
+    }
+  }, [params.code]);
 
   // Auto-open keyboard only on initial app launch
   useEffect(() => {
