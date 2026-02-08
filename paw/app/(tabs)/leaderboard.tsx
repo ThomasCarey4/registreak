@@ -145,9 +145,7 @@ export default function LeaderboardScreen() {
           {/* Header */}
           <View className="px-5 pt-5 pb-2">
             <Text style={{ fontSize: 32, fontWeight: "bold", marginBottom: 4, color: colors.text }}>Leaderboard</Text>
-            <Text style={{ fontSize: 15, color: colors.subtleText }}>
-              {courseName} · {totalLectures} lectures
-            </Text>
+            <Text style={{ fontSize: 15, color: colors.subtleText }}>{courseName}</Text>
           </View>
 
           {/* Top 10 List */}
