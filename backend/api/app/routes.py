@@ -102,7 +102,9 @@ def get_user_details(student_id):
         return jsonify({
             "student_id": user.student_id,
             "username": user.username,
-            "is_staff": user.is_staff
+            "is_staff": user.is_staff,
+            "current_streak": user.current_streak,
+            "longest_streak": user.longest_streak
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

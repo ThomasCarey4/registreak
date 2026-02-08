@@ -3,9 +3,58 @@ Controllers for handling attendance verification business logic.
 """
 from flask import jsonify, current_app
 from datetime import datetime, timezone
-from .models import Lecture, LectureAttendance
+from .models import Lecture, LectureAttendance, Users
 from .utils import generate_lecture_code, find_lecture_by_code
 from . import db
+
+
+def get_previous_attendance(user_id: str, current_lecture: Lecture) -> LectureAttendance | None:
+    """
+    Find the student's most recent enrolled lecture before the current one.
+
+    Uses the index on lectures(start_time DESC, id) for efficient lookup.
+    With LIMIT 1 and ORDER BY DESC, PostgreSQL stops at the first match.
+
+    Args:
+        user_id: The student's ID
+        current_lecture: The lecture being attended now
+
+    Returns:
+        The LectureAttendance record for the previous lecture, or None if this is the first.
+    """
+    return (
+        LectureAttendance.query
+        .join(Lecture)
+        .filter(LectureAttendance.user_id == user_id)
+        .filter(Lecture.start_time < current_lecture.start_time)
+        .order_by(Lecture.start_time.desc())
+        .first()
+    )
+
+
+def update_streak(user: Users, previous_attendance: LectureAttendance | None) -> None:
+    """
+    Update the user's streak based on their previous lecture attendance.
+
+    Logic:
+    - If no previous lecture (first ever) or previous was attended → increment streak
+    - If previous was not attended → streak broken → reset to 1
+    - Always update longest_streak if current exceeds it
+
+    Args:
+        user: The Users model instance to update
+        previous_attendance: The previous LectureAttendance record, or None
+    """
+    if previous_attendance is None or previous_attendance.is_attended:
+        # First lecture ever, or previous was attended → continue streak
+        user.current_streak += 1
+    else:
+        # Previous lecture was missed → streak broken
+        user.current_streak = 1
+
+    # Update longest streak if we've exceeded it
+    if user.current_streak > user.longest_streak:
+        user.longest_streak = user.current_streak
 
 
 def get_lecturer_current_lectures(lecturer_id):
@@ -134,6 +183,13 @@ def verify_student_attendance(data):
 
     # Mark attendance as true
     attendance.is_attended = True
+
+    # Update streak: check if previous lecture was attended
+    user = Users.query.filter_by(student_id=student_id).first()
+    if user:
+        previous_attendance = get_previous_attendance(student_id, lecture)
+        update_streak(user, previous_attendance)
+
     db.session.commit()
 
     return jsonify({
@@ -141,6 +197,8 @@ def verify_student_attendance(data):
         'message': 'Attendance marked successfully',
         'lecture_id': lecture.id,
         'module_name': lecture.module.name if lecture.module else None,
-        'already_attended': False
+        'already_attended': False,
+        'current_streak': user.current_streak if user else 0,
+        'longest_streak': user.longest_streak if user else 0
     }), 200
 
