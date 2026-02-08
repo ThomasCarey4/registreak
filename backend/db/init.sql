@@ -7,12 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     password TEXT NOT NULL,
     "isStaff" BOOLEAN DEFAULT FALSE NOT NULL,
     current_streak INTEGER DEFAULT 0 NOT NULL,
-<<<<<<< HEAD
-    longest_streak INTEGER DEFAULT 0 NOT NULL,
-    streak_last_date DATE
-=======
     longest_streak INTEGER DEFAULT 0 NOT NULL
->>>>>>> 62f716cb84c6cf81a795a5075598aa15bd72927c
 );
 
 -- Courses table

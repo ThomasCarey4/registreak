@@ -105,7 +105,6 @@ def get_user_details(student_id):
             "student_id": user.student_id,
             "username": user.username,
             "is_staff": user.is_staff,
-<<<<<<< HEAD
             "current_streak": user.current_streak or 0,
             "longest_streak": user.longest_streak or 0
         }), 200
@@ -128,12 +127,7 @@ def get_user_streak(student_id):
         return jsonify({
             "student_id": user.student_id,
             "current_streak": user.current_streak or 0,
-            "longest_streak": user.longest_streak or 0,
-            "streak_last_date": user.streak_last_date.isoformat() if user.streak_last_date else None
-=======
-            "current_streak": user.current_streak,
-            "longest_streak": user.longest_streak
->>>>>>> 62f716cb84c6cf81a795a5075598aa15bd72927c
+            "longest_streak": user.longest_streak or 0
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
