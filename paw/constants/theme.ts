@@ -59,38 +59,6 @@ export const LeedsAlert = {
   info: "#1993bd",
 } as const;
 
-// ── App theme (monochromatic, mapped from Leeds palette) ──
-export const Colors = {
-  light: {
-    text: LeedsFont.base,
-    background: LeedsWhite.base,
-    tint: LeedsFont.light,
-    icon: LeedsFont.xLight,
-    tabIconDefault: LeedsGrey.medium,
-    tabIconSelected: LeedsFont.light,
-    card: "#F9FAFB",
-    cardHighlight: "#F9FAFB",
-    subtleText: LeedsFont.xLight,
-    rankText: LeedsGrey.medium,
-    divider: LeedsBorder.light,
-    surfaceBg: LeedsGrey.faded,
-  },
-  dark: {
-    text: LeedsGrey.faded,
-    background: LeedsBlack.dark,
-    tint: LeedsGrey.light,
-    icon: LeedsGrey.dark,
-    tabIconDefault: LeedsGrey.dark,
-    tabIconSelected: LeedsGrey.light,
-    card: "#1C1C1E",
-    cardHighlight: "#343436",
-    subtleText: LeedsBlack.light,
-    rankText: LeedsBlack.light,
-    divider: "#48484A",
-    surfaceBg: LeedsBlack.dark,
-  },
-};
-
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */

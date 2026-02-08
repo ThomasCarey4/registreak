@@ -1,65 +1,56 @@
-import React, { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useAuth } from '@/context/auth-context';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/theme';
+import React, { useState } from "react";
+import { Alert, Pressable, TextInput, View, Text } from "react-native";
+import { useAuth } from "@/context/auth-context";
+import { themeColors } from "@/constants/colors";
+import { useColorScheme } from "nativewind";
 
 export default function LoginScreen() {
   const { login } = useAuth();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const colorScheme = useColorScheme() ?? 'light';
-  const isDark = colorScheme === 'dark';
-  const tintColor = Colors[colorScheme].tint;
+  const { colorScheme } = useColorScheme();
+  const colors = themeColors[colorScheme ?? "light"];
 
   async function submit() {
     if (!username.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please enter username and password');
+      Alert.alert("Error", "Please enter username and password");
       return;
     }
     try {
       setIsLoading(true);
       await login(username, password);
     } catch (err) {
-      Alert.alert('Login failed', String(err));
+      Alert.alert("Login failed", String(err));
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? '#151718' : '#fff' }]}>  
-      <View style={styles.inner}>
-        <Text style={[styles.emoji]}>🐱</Text>
-        <Text style={[styles.title, { color: isDark ? '#fff' : '#000' }]}>Lucky Cat</Text>
-        <Text style={[styles.subtitle, { color: isDark ? '#aaa' : '#666' }]}>Sign in to mark attendance</Text>
+    <View className="flex-1 justify-center bg-background p-6">
+      <View className="w-full items-center gap-3">
+        <Text className="mb-1 text-[56px]">🐱</Text>
+        <Text className="text-foreground text-[28px] font-bold">Lucky Cat</Text>
+        <Text className="text-subtle mb-4 text-[15px]">Sign in to mark attendance</Text>
 
         <TextInput
           value={username}
           onChangeText={setUsername}
-          style={[styles.input, {
-            backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
-            color: isDark ? '#fff' : '#000',
-            borderColor: isDark ? '#444' : '#ddd',
-          }]}
+          className="w-full rounded-xl border border-divider bg-card p-3.5 text-base text-foreground"
           autoCapitalize="none"
           placeholder="Username or Student ID"
-          placeholderTextColor={isDark ? '#777' : '#999'}
+          placeholderTextColor={colors.subtle}
           editable={!isLoading}
         />
 
         <TextInput
           value={password}
           onChangeText={setPassword}
-          style={[styles.input, {
-            backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
-            color: isDark ? '#fff' : '#000',
-            borderColor: isDark ? '#444' : '#ddd',
-          }]}
+          className="w-full rounded-xl border border-divider bg-card p-3.5 text-base text-foreground"
           secureTextEntry
           placeholder="Password"
-          placeholderTextColor={isDark ? '#777' : '#999'}
+          placeholderTextColor={colors.subtle}
           editable={!isLoading}
           onSubmitEditing={submit}
         />
@@ -67,55 +58,12 @@ export default function LoginScreen() {
         <Pressable
           onPress={submit}
           disabled={isLoading}
-          style={[styles.button, { backgroundColor: tintColor, opacity: isLoading ? 0.6 : 1 }]}
+          style={{ backgroundColor: colors.tint, opacity: isLoading ? 0.6 : 1 }}
+          className="mt-2 w-full items-center rounded-xl p-4"
         >
-          <Text style={styles.buttonText}>{isLoading ? 'Signing in...' : 'Sign In'}</Text>
+          <Text className="text-[17px] font-semibold text-white">{isLoading ? "Signing in..." : "Sign In"}</Text>
         </Pressable>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  inner: {
-    alignItems: 'center',
-    gap: 12,
-    width: '100%',
-  },
-  emoji: {
-    fontSize: 56,
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  subtitle: {
-    fontSize: 15,
-    marginBottom: 16,
-  },
-  input: {
-    width: '100%',
-    borderWidth: 1,
-    padding: 14,
-    borderRadius: 12,
-    fontSize: 16,
-  },
-  button: {
-    width: '100%',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '600',
-  },
-});

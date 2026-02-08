@@ -1,17 +1,14 @@
-import React, { useState } from 'react';
-import { Alert, Button, StyleSheet, Switch, TextInput, View } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuth } from '@/context/auth-context';
-
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import React, { useState } from "react";
+import { Alert, Button, Switch, TextInput, View, Text } from "react-native";
+import { useRouter } from "expo-router";
+import { useAuth } from "@/context/auth-context";
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { register } = useAuth();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isStaff, setIsStaff] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -20,14 +17,14 @@ export default function RegisterScreen() {
       try {
         setIsLoading(true);
         if (!email || !password) {
-          Alert.alert('Validation', 'Email and password are required');
+          Alert.alert("Validation", "Email and password are required");
           return;
         }
         await register(email, password, email, isStaff);
-        Alert.alert('Registered', 'Account created successfully');
-        router.push('/');
+        Alert.alert("Registered", "Account created successfully");
+        router.push("/");
       } catch (err) {
-        Alert.alert('Register failed', String(err));
+        Alert.alert("Register failed", String(err));
       } finally {
         setIsLoading(false);
       }
@@ -35,93 +32,48 @@ export default function RegisterScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">Register</ThemedText>
+    <View className="flex-1 gap-3 bg-background p-4">
+      <Text className="text-foreground text-3xl font-bold">Register</Text>
 
-      <ThemedText type="subtitle">Name</ThemedText>
-      <TextInput 
-        value={name} 
-        onChangeText={setName} 
-        style={styles.input} 
+      <Text className="text-foreground text-lg font-semibold">Name</Text>
+      <TextInput
+        value={name}
+        onChangeText={setName}
+        className="rounded-md border border-divider p-2 text-foreground"
         placeholder="Full name"
         editable={!isLoading}
       />
 
-      <ThemedText type="subtitle">Email</ThemedText>
+      <Text className="text-foreground text-lg font-semibold">Email</Text>
       <TextInput
         value={email}
         onChangeText={setEmail}
-        style={styles.input}
+        className="rounded-md border border-divider p-2 text-foreground"
         keyboardType="email-address"
         autoCapitalize="none"
         placeholder="you@example.com"
         editable={!isLoading}
       />
 
-      <ThemedText type="subtitle">Password</ThemedText>
+      <Text className="text-foreground text-lg font-semibold">Password</Text>
       <TextInput
         value={password}
         onChangeText={setPassword}
-        style={styles.input}
+        className="rounded-md border border-divider p-2 text-foreground"
         secureTextEntry
         placeholder="••••••••"
         editable={!isLoading}
       />
 
-      <View style={styles.staffSection}>
-        <View style={styles.staffLabelContainer}>
-          <ThemedText type="subtitle">Create as Instructor</ThemedText>
-          <ThemedText style={styles.staffDescription}>
-            Instructors can view and manage attendance codes
-          </ThemedText>
+      <View className="my-2 flex-row items-center justify-between border-y border-divider py-3">
+        <View className="mr-4 flex-1">
+          <Text className="text-foreground text-lg font-semibold">Create as Instructor</Text>
+          <Text className="text-foreground/60 mt-1 text-xs">Instructors can view and manage attendance codes</Text>
         </View>
         <Switch value={isStaff} onValueChange={setIsStaff} disabled={isLoading} />
       </View>
 
-      <Button 
-        title={isLoading ? 'Creating account...' : 'Create account'} 
-        onPress={submit}
-        disabled={isLoading}
-      />
-    </ThemedView>
+      <Button title={isLoading ? "Creating account..." : "Create account"} onPress={submit} disabled={isLoading} />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    gap: 12,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 8,
-    borderRadius: 6,
-  },
-  staffSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginVertical: 8,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#eee',
-  },
-  staffLabelContainer: {
-    flex: 1,
-    marginRight: 16,
-  },
-  staffDescription: {
-    marginTop: 4,
-    fontSize: 12,
-    opacity: 0.6,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginVertical: 8,
-  },
-});

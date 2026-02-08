@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/auth-context";
-import { Colors, Fonts, LeedsRed, LeedsAlert } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { Fonts, LeedsRed, LeedsAlert } from "@/constants/theme";
+import { themeColors } from "@/constants/colors";
+import { useColorScheme } from "nativewind";
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import {
@@ -19,8 +20,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function RegisterScreen() {
   const { signUp } = useAuth();
   const router = useRouter();
-  const colorScheme = useColorScheme() ?? "light";
-  const colors = Colors[colorScheme];
+  const { colorScheme } = useColorScheme();
+  const colors = themeColors[colorScheme ?? "light"];
 
   const [username, setUsername] = useState("");
   const [studentId, setStudentId] = useState("");
@@ -65,7 +66,7 @@ export default function RegisterScreen() {
               style={{
                 fontSize: 28,
                 fontWeight: "700",
-                color: colors.text,
+                color: colors.foreground,
                 fontFamily: Fonts.rounded,
                 letterSpacing: -0.5,
               }}
@@ -75,7 +76,7 @@ export default function RegisterScreen() {
             <Text
               style={{
                 fontSize: 16,
-                color: colors.subtleText,
+                color: colors.subtle,
                 marginTop: 6,
                 fontFamily: Fonts.sans,
               }}
@@ -115,7 +116,7 @@ export default function RegisterScreen() {
             value={username}
             onChangeText={setUsername}
             placeholder="Choose a username"
-            placeholderTextColor={colors.subtleText}
+            placeholderTextColor={colors.subtle}
             autoCapitalize="none"
             autoCorrect={false}
             textContentType="username"
@@ -132,7 +133,7 @@ export default function RegisterScreen() {
             value={studentId}
             onChangeText={setStudentId}
             placeholder="e.g. S12345678"
-            placeholderTextColor={colors.subtleText}
+            placeholderTextColor={colors.subtle}
             autoCapitalize="none"
             autoCorrect={false}
             returnKeyType="next"
@@ -148,7 +149,7 @@ export default function RegisterScreen() {
             value={password}
             onChangeText={setPassword}
             placeholder="Min. 6 characters"
-            placeholderTextColor={colors.subtleText}
+            placeholderTextColor={colors.subtle}
             secureTextEntry
             textContentType="newPassword"
             returnKeyType="next"
@@ -164,7 +165,7 @@ export default function RegisterScreen() {
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             placeholder="Re-enter password"
-            placeholderTextColor={colors.subtleText}
+            placeholderTextColor={colors.subtle}
             secureTextEntry
             textContentType="newPassword"
             returnKeyType="done"
@@ -180,7 +181,7 @@ export default function RegisterScreen() {
             style={({ pressed }) => ({
               height: 52,
               borderRadius: 12,
-              backgroundColor: pressed ? "#333333" : "#000000",
+              backgroundColor: pressed ? colors.tint + "dd" : colors.tint,
               alignItems: "center",
               justifyContent: "center",
               opacity: loading ? 0.7 : 1,
@@ -208,7 +209,7 @@ export default function RegisterScreen() {
               <Text
                 style={{
                   fontSize: 15,
-                  color: colors.subtleText,
+                  color: colors.subtle,
                   fontFamily: Fonts.sans,
                 }}
               >
@@ -223,12 +224,12 @@ export default function RegisterScreen() {
 }
 
 // ─── Shared styles ────────────────────────────────────
-type ThemeColors = (typeof Colors)["light"] | (typeof Colors)["dark"];
+type ThemeColors = (typeof themeColors)["light"] | (typeof themeColors)["dark"];
 
 const labelStyle = (colors: ThemeColors) => ({
   fontSize: 13,
   fontWeight: "600" as const,
-  color: colors.subtleText,
+  color: colors.subtle,
   marginBottom: 6,
   fontFamily: Fonts.sans,
   textTransform: "uppercase" as const,
@@ -242,7 +243,7 @@ const inputStyle = (colors: ThemeColors) => ({
   borderRadius: 12,
   paddingHorizontal: 16,
   fontSize: 16,
-  color: colors.text,
+  color: colors.foreground,
   backgroundColor: colors.card,
   fontFamily: Fonts.sans,
   marginBottom: 16,

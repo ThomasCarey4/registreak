@@ -1,3 +1,127 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    /* ── Surfaces ── */
+    --color-background: 255 255 255;
+    --color-surface: 243 242 241;
+    --color-card: 249 250 251;
+    --color-card-highlight: 249 250 251;
+
+    /* ── Text ── */
+    --color-foreground: 33 37 41;
+    --color-subtle: 99 99 99;
+    --color-muted: 188 184 179;
+    --color-rank: 188 184 179;
+
+    /* ── Accent ── */
+    --color-tint: 59 59 59;
+
+    /* ── Icon ── */
+    --color-icon: 99 99 99;
+    --color-tab-default: 188 184 179;
+    --color-tab-active: 59 59 59;
+
+    /* ── Borders / Dividers ── */
+    --color-divider: 201 200 197;
+    --color-input-border: 221 221 221;
+    --color-input-bg: 245 245 245;
+
+    /* ── Semantic ── */
+    --color-error: 244 67 54;
+    --color-success: 76 175 80;
+    --color-warning: 255 152 0;
+
+    /* ── Toast / Feedback ── */
+    --color-toast-bg: 255 245 245;
+    --color-toast-border: 255 205 210;
+    --color-toast-icon-bg: 255 205 210;
+    --color-toast-title: 198 40 40;
+    --color-toast-subtitle: 229 115 115;
+    --color-toast-progress: 239 83 80;
+
+    /* ── Digit cell (Attend screen) ── */
+    --color-digit-border: 208 213 221;
+    --color-digit-bg: 249 250 251;
+    --color-error-cell-bg: 251 233 231;
+    --color-success-cell-bg: 232 245 233;
+
+    /* ── Calendar ── */
+    --color-calendar-scheduled: 209 209 214;
+    --color-calendar-ring-bg: 229 229 234;
+    --color-calendar-future: 199 199 204;
+    --color-calendar-dot-null: 199 199 204;
+
+    /* ── Account card ── */
+    --color-account-card: 242 242 247;
+    --color-account-label: 110 110 115;
+
+    /* ── Button (auth) ── */
+    --color-btn-primary: 0 0 0;
+    --color-btn-primary-pressed: 51 51 51;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* ── Surfaces ── */
+    --color-background: 10 2 2;
+    --color-surface: 10 2 2;
+    --color-card: 28 28 30;
+    --color-card-highlight: 52 52 54;
+
+    /* ── Text ── */
+    --color-foreground: 243 242 241;
+    --color-subtle: 110 107 107;
+    --color-muted: 106 100 93;
+    --color-rank: 110 107 107;
+
+    /* ── Accent ── */
+    --color-tint: 234 232 230;
+
+    /* ── Icon ── */
+    --color-icon: 106 100 93;
+    --color-tab-default: 106 100 93;
+    --color-tab-active: 234 232 230;
+
+    /* ── Borders / Dividers ── */
+    --color-divider: 72 72 74;
+    --color-input-border: 68 68 68;
+    --color-input-bg: 42 42 42;
+
+    /* ── Semantic (unchanged — strong contrast needed both modes) ── */
+    --color-error: 244 67 54;
+    --color-success: 76 175 80;
+    --color-warning: 255 152 0;
+
+    /* ── Toast / Feedback ── */
+    --color-toast-bg: 43 28 28;
+    --color-toast-border: 74 45 45;
+    --color-toast-icon-bg: 74 45 45;
+    --color-toast-title: 239 154 154;
+    --color-toast-subtitle: 239 154 154;
+    --color-toast-progress: 244 67 54;
+
+    /* ── Digit cell (Attend screen) ── */
+    --color-digit-border: 51 51 51;
+    --color-digit-bg: 28 28 30;
+    --color-error-cell-bg: 58 26 26;
+    --color-success-cell-bg: 26 58 26;
+
+    /* ── Calendar ── */
+    --color-calendar-scheduled: 58 58 60;
+    --color-calendar-ring-bg: 44 44 46;
+    --color-calendar-future: 85 85 85;
+    --color-calendar-dot-null: 58 58 60;
+
+    /* ── Account card ── */
+    --color-account-card: 28 28 30;
+    --color-account-label: 142 142 147;
+
+    /* ── Button (auth) ── */
+    --color-btn-primary: 255 255 255;
+    --color-btn-primary-pressed: 200 200 200;
+  }
+}

@@ -1,6 +1,6 @@
 import { SuccessOverlay } from "@/components/success-overlay";
-import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { themeColors } from "@/constants/colors";
+import { useColorScheme } from "nativewind";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Keyboard, Pressable, Text, TextInput, View } from "react-native";
@@ -16,9 +16,8 @@ export default function AttendScreen() {
   const toastAnim = useRef(new Animated.Value(-120)).current;
   const toastProgress = useRef(new Animated.Value(1)).current;
   const inputRef = useRef<TextInput>(null);
-  const colorScheme = useColorScheme() ?? "light";
-  const tintColor = Colors[colorScheme].tint;
-  const isDark = colorScheme === "dark";
+  const { colorScheme } = useColorScheme();
+  const colors = themeColors[colorScheme ?? "light"];
   const router = useRouter();
 
   // Auto-open keyboard only on initial app launch
@@ -65,17 +64,17 @@ export default function AttendScreen() {
 
   const submitCode = async (finalCode: string) => {
     setEditIndex(null);
-    
+
     try {
       // Call the API to verify attendance
       await apiService.verifyAttendance(finalCode);
-      
+
       // Success - show success overlay
       setIsError(false);
       setSubmitted(true);
       Keyboard.dismiss();
       setShowSuccess(true);
-      
+
       setTimeout(() => {
         setCells([null, null, null, null]);
         setSubmitted(false);
@@ -157,7 +156,7 @@ export default function AttendScreen() {
   };
 
   return (
-    <Pressable onPress={Keyboard.dismiss} className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
+    <Pressable onPress={Keyboard.dismiss} className="flex-1 bg-background">
       <SuccessOverlay
         visible={showSuccess}
         onFadeStart={() => {
@@ -181,100 +180,72 @@ export default function AttendScreen() {
             zIndex: 50,
             borderRadius: 16,
             overflow: "hidden",
-            backgroundColor: isDark ? "#2B1C1C" : "#FFF5F5",
-            borderWidth: 1,
-            borderColor: isDark ? "#4A2D2D" : "#FFCDD2",
           }}
+          className="bg-toast-bg border border-toast-border"
         >
           <View className="flex-row items-center px-4 py-3.5">
-            <View
-              className="w-9 h-9 rounded-xl justify-center items-center mr-3"
-              style={{
-                backgroundColor: isDark ? "#4A2D2D" : "#FFCDD2",
-              }}
-            >
-              <Text className="text-base" style={{ color: "#F44336" }}>
-                ✕
-              </Text>
+            <View className="w-9 h-9 rounded-xl justify-center items-center mr-3 bg-toast-icon-bg">
+              <Text className="text-base text-error">✕</Text>
             </View>
             <View className="flex-1">
-              <Text className="text-[14px] font-semibold" style={{ color: isDark ? "#EF9A9A" : "#C62828" }}>
-                Invalid Code
-              </Text>
-              <Text
-                className="text-[12px] mt-0.5"
-                style={{
-                  color: isDark ? "#EF9A9A" : "#E57373",
-                  opacity: 0.8,
-                }}
-              >
-                Please check the code and try again
-              </Text>
+              <Text className="text-[14px] font-semibold text-toast-title">Invalid Code</Text>
+              <Text className="text-[12px] mt-0.5 text-toast-subtitle/80">Please check the code and try again</Text>
             </View>
           </View>
           <Animated.View
             style={{
               height: 3,
-              backgroundColor: isDark ? "#F44336" : "#EF5350",
               opacity: 0.5,
               width: toastProgress.interpolate({
                 inputRange: [0, 1],
                 outputRange: ["0%", "100%"],
               }),
             }}
+            className="bg-toast-progress"
           />
         </Animated.View>
       )}
 
       <View className="flex-1 justify-center items-center px-6">
         <View className="items-center mb-12">
-          <Text className={`text-[32px] font-bold mb-2 text-center ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
-            Mark Attendance
-          </Text>
-          <Text
-            className={`text-base text-center leading-[22px] ${isDark ? "text-[#ECEDEE]/50" : "text-[#374151]/50"}`}
-          >
+          <Text className="text-[32px] font-bold mb-2 text-center text-foreground">Mark Attendance</Text>
+          <Text className="text-base text-center leading-[22px] text-foreground/50">
             Enter the 4-digit code shown in your lecture
           </Text>
         </View>
 
         <View className="flex-row gap-3">
-          {[0, 1, 2, 3].map((i) => (
-            <Pressable
-              key={i}
-              onPress={() => handleTapDigit(i)}
-              className="w-[68px] h-[84px] rounded-2xl border-2 justify-center items-center"
-              style={{
-                borderColor: submitted
-                  ? isError
-                    ? "#F44336"
-                    : "#4CAF50"
-                  : activeIndex === i
-                    ? tintColor
-                    : isDark
-                      ? "#333"
-                      : "#D0D5DD",
-                backgroundColor: submitted
-                  ? isError
-                    ? isDark
-                      ? "#3a1a1a"
-                      : "#FBE9E7"
-                    : isDark
-                      ? "#1a3a1a"
-                      : "#E8F5E9"
-                  : isDark
-                    ? "#1C1C1E"
-                    : "#F9FAFB",
-              }}
-            >
-              <Text
-                className={`text-4xl font-bold ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}
-                style={submitted ? { color: isError ? "#F44336" : "#4CAF50" } : undefined}
+          {[0, 1, 2, 3].map((i) => {
+            const isActive = activeIndex === i;
+            const cellBorder = submitted
+              ? isError
+                ? colors.error
+                : colors.success
+              : isActive
+                ? colors.tint
+                : undefined;
+            const cellBg = submitted
+              ? undefined // handled by className
+              : undefined; // handled by className
+            const bgClass = submitted ? (isError ? "bg-error-cell-bg" : "bg-success-cell-bg") : "bg-digit-bg";
+            const borderClass = !submitted && !isActive ? "border-digit-border" : "";
+
+            return (
+              <Pressable
+                key={i}
+                onPress={() => handleTapDigit(i)}
+                className={`w-[68px] h-[84px] rounded-2xl border-2 justify-center items-center ${bgClass} ${borderClass}`}
+                style={cellBorder ? { borderColor: cellBorder } : undefined}
               >
-                {cells[i] || ""}
-              </Text>
-            </Pressable>
-          ))}
+                <Text
+                  className="text-4xl font-bold text-foreground"
+                  style={submitted ? { color: isError ? colors.error : colors.success } : undefined}
+                >
+                  {cells[i] || ""}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         <TextInput

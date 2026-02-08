@@ -3,13 +3,13 @@ import React from "react";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { themeColors } from "@/constants/colors";
+import { useColorScheme } from "nativewind";
 import { useAuth } from "@/context/auth-context";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LecturesScreen from "../lectures";
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useColorScheme();
   const { user } = useAuth();
 
   // If user is an instructor, render the Lectures screen full-screen (no bottom tabs)
@@ -25,7 +25,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: themeColors[colorScheme ?? "light"].tint,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {

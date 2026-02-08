@@ -1,12 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { StyleSheet, ScrollView, View, RefreshControl, ActivityIndicator, Pressable } from 'react-native';
-import { useAuth } from '@/context/auth-context';
-import { apiService } from '@/services/api';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/theme';
-import { Redirect } from 'expo-router';
+import React, { useEffect, useState, useCallback } from "react";
+import { ScrollView, View, RefreshControl, ActivityIndicator, Pressable, Text } from "react-native";
+import { useAuth } from "@/context/auth-context";
+import { apiService } from "@/services/api";
+import { themeColors } from "@/constants/colors";
+import { useColorScheme } from "nativewind";
+import { Redirect } from "expo-router";
 
 interface Lecture {
   lecture_id: number;
@@ -26,26 +24,26 @@ interface CodeResponse {
 
 export default function LecturesScreen() {
   const { user, logout } = useAuth();
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useColorScheme();
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [sessionEnded, setSessionEnded] = useState(false);
 
   const fetchLectures = useCallback(async () => {
     try {
-      setError('');
+      setError("");
       const response = await apiService.getVerificationCode();
-      
+
       if (response && response.lectures) {
         setLectures(response.lectures);
       } else {
         setLectures([]);
-        setError(response?.message || response?.error || 'No active lectures found');
+        setError(response?.message || response?.error || "No active lectures found");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch lectures');
+      setError(err instanceof Error ? err.message : "Failed to fetch lectures");
       setLectures([]);
     } finally {
       setLoading(false);
@@ -78,16 +76,16 @@ export default function LecturesScreen() {
       setSessionEnded(true);
       setLectures([]);
     } catch (err) {
-      setError('Failed to end session');
+      setError("Failed to end session");
     }
   };
 
   const formatTime = (isoString: string): string => {
     try {
       const date = new Date(isoString);
-      return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
         hour12: true,
       });
     } catch {
@@ -99,214 +97,81 @@ export default function LecturesScreen() {
     return <Redirect href="/" />;
   }
 
+  const colors = themeColors[colorScheme ?? "light"];
+
   return (
-    <ThemedView style={styles.container}>
+    <View className="flex-1 bg-background">
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ padding: 16, flexGrow: 1 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <View style={styles.header}>
-          <ThemedText type="title">Active Lectures</ThemedText>
-          <ThemedText style={styles.subtitle}>
-            Share these codes with your students
-          </ThemedText>
+        <View className="mb-6 items-center">
+          <Text className="text-foreground text-3xl font-bold">Active Lectures</Text>
+          <Text className="text-foreground/70 mt-2 text-sm">Share these codes with your students</Text>
         </View>
 
         {error && (
-          <View style={[styles.errorBox, { borderColor: Colors[colorScheme ?? 'light'].tabIconDefault }]}>
-            <ThemedText style={styles.errorText}>{error}</ThemedText>
+          <View className="mb-4 rounded-lg border border-error/30 bg-error/5 p-3">
+            <Text className="text-error text-sm">{error}</Text>
           </View>
         )}
 
         {loading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].tint} />
-            <ThemedText style={styles.loadingText}>Loading lectures...</ThemedText>
+          <View className="flex-1 items-center justify-center py-10">
+            <ActivityIndicator size="large" color={colors.tint} />
+            <Text className="text-foreground mt-3 text-sm">Loading lectures...</Text>
           </View>
         )}
 
         {!loading && lectures.length === 0 && !error && (
-          <View style={styles.emptyContainer}>
-            <ThemedText style={styles.emptyText}>No active lectures</ThemedText>
-            <ThemedText style={styles.emptySubtext}>
-              You don't have any lectures scheduled right now
-            </ThemedText>
+          <View className="flex-1 items-center justify-center py-10">
+            <Text className="text-foreground mb-2 text-lg font-semibold">No active lectures</Text>
+            <Text className="text-foreground/60 text-sm">You don't have any lectures scheduled right now</Text>
           </View>
         )}
 
         {lectures.map((lecture) => (
-          <View key={lecture.lecture_id} style={styles.lectureCard}>
-            <View style={styles.lectureHeader}>
-              <View style={styles.moduleInfo}>
-                <ThemedText type="subtitle">{lecture.module_name}</ThemedText>
-                <ThemedText style={styles.timeText}>
+          <View key={lecture.lecture_id} className="mb-5 overflow-hidden rounded-xl border border-divider">
+            <View className="bg-foreground/5 p-4">
+              <View className="gap-1">
+                <Text className="text-foreground text-lg font-semibold">{lecture.module_name}</Text>
+                <Text className="text-foreground/60 text-xs">
                   {formatTime(lecture.start_time)} – {formatTime(lecture.end_time)}
-                </ThemedText>
+                </Text>
               </View>
             </View>
 
-            <View style={styles.codeContainer}>
-              <ThemedText style={styles.codeLabel}>Verification Code</ThemedText>
-              <View style={styles.codeDigits}>
-                {lecture.code.split('').map((digit, idx) => (
-                  <View key={idx} style={styles.digitBox}>
-                    <ThemedText style={styles.digit}>{digit}</ThemedText>
+            <View className="items-center p-6">
+              <Text className="text-foreground/60 mb-4 text-xs uppercase tracking-wider">Verification Code</Text>
+              <View className="mb-4 flex-row justify-center gap-3">
+                {lecture.code.split("").map((digit, idx) => (
+                  <View
+                    key={idx}
+                    className="h-[72px] w-[56px] items-center justify-center rounded-lg border-2 border-success bg-success/10"
+                  >
+                    <Text
+                      className="text-foreground text-[32px] font-bold"
+                      style={{ fontFamily: "Courier New", letterSpacing: 2 }}
+                    >
+                      {digit}
+                    </Text>
                   </View>
                 ))}
               </View>
-              <View style={styles.autoRefreshIndicator}>
-                <View style={styles.pulseDot} />
-                <ThemedText style={styles.autoRefreshText}>
-                  Auto-refreshing every 30 seconds
-                </ThemedText>
+              <View className="flex-row items-center gap-2">
+                <View className="h-1.5 w-1.5 rounded-full bg-success" />
+                <Text className="text-foreground/60 text-xs">Auto-refreshing every 30 seconds</Text>
               </View>
             </View>
           </View>
         ))}
 
         {lectures.length > 0 && (
-          <Pressable
-            style={[styles.endSessionButton, { marginBottom: 20 }]}
-            onPress={handleEndSession}
-          >
-            <ThemedText style={styles.endSessionText}>End Session</ThemedText>
+          <Pressable className="mb-5 mt-2 items-center rounded-lg bg-error px-6 py-3.5" onPress={handleEndSession}>
+            <Text className="text-base font-semibold text-white">End Session</Text>
           </Pressable>
         )}
       </ScrollView>
-    </ThemedView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 16,
-    flexGrow: 1,
-  },
-  header: {
-    marginBottom: 24,
-    alignItems: 'center',
-  },
-  subtitle: {
-    marginTop: 8,
-    fontSize: 14,
-    opacity: 0.7,
-  },
-  errorBox: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    backgroundColor: 'rgba(255, 0, 0, 0.05)',
-  },
-  errorText: {
-    color: '#ff4444',
-    fontSize: 14,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    opacity: 0.6,
-  },
-  lectureCard: {
-    marginBottom: 20,
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  lectureHeader: {
-    padding: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-  },
-  moduleInfo: {
-    gap: 4,
-  },
-  timeText: {
-    fontSize: 12,
-    opacity: 0.6,
-  },
-  codeContainer: {
-    padding: 24,
-    alignItems: 'center',
-  },
-  codeLabel: {
-    fontSize: 12,
-    opacity: 0.6,
-    marginBottom: 16,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  codeDigits: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 12,
-    marginBottom: 16,
-  },
-  digitBox: {
-    width: 56,
-    height: 72,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#4CAF50',
-    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  digit: {
-    fontSize: 32,
-    fontWeight: '700',
-    fontFamily: 'Courier New',
-    letterSpacing: 2,
-  },
-  autoRefreshIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  pulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#4CAF50',
-  },
-  autoRefreshText: {
-    fontSize: 12,
-    opacity: 0.6,
-  },
-  endSessionButton: {
-    backgroundColor: '#ff4444',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  endSessionText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});

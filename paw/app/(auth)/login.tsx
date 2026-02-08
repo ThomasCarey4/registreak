@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/auth-context";
-import { Colors, Fonts, LeedsRed, LeedsAlert, LeedsBorder } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { Fonts, LeedsRed, LeedsAlert } from "@/constants/theme";
+import { themeColors } from "@/constants/colors";
+import { useColorScheme } from "nativewind";
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import {
@@ -19,8 +20,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function LoginScreen() {
   const { signIn } = useAuth();
   const router = useRouter();
-  const colorScheme = useColorScheme() ?? "light";
-  const colors = Colors[colorScheme];
+  const { colorScheme } = useColorScheme();
+  const colors = themeColors[colorScheme ?? "light"];
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -55,7 +56,7 @@ export default function LoginScreen() {
               style={{
                 fontSize: 28,
                 fontWeight: "700",
-                color: colors.text,
+                color: colors.foreground,
                 fontFamily: Fonts.rounded,
                 letterSpacing: -0.5,
               }}
@@ -65,7 +66,7 @@ export default function LoginScreen() {
             <Text
               style={{
                 fontSize: 16,
-                color: colors.subtleText,
+                color: colors.subtle,
                 marginTop: 6,
                 fontFamily: Fonts.sans,
               }}
@@ -104,7 +105,7 @@ export default function LoginScreen() {
             style={{
               fontSize: 13,
               fontWeight: "600",
-              color: colors.subtleText,
+              color: colors.subtle,
               marginBottom: 6,
               fontFamily: Fonts.sans,
               textTransform: "uppercase",
@@ -117,7 +118,7 @@ export default function LoginScreen() {
             value={username}
             onChangeText={setUsername}
             placeholder="Username or Student ID"
-            placeholderTextColor={colors.subtleText}
+            placeholderTextColor={colors.subtle}
             autoCapitalize="none"
             autoCorrect={false}
             textContentType="username"
@@ -131,7 +132,7 @@ export default function LoginScreen() {
               borderRadius: 12,
               paddingHorizontal: 16,
               fontSize: 16,
-              color: colors.text,
+              color: colors.foreground,
               backgroundColor: colors.card,
               fontFamily: Fonts.sans,
               marginBottom: 18,
@@ -143,7 +144,7 @@ export default function LoginScreen() {
             style={{
               fontSize: 13,
               fontWeight: "600",
-              color: colors.subtleText,
+              color: colors.subtle,
               marginBottom: 6,
               fontFamily: Fonts.sans,
               textTransform: "uppercase",
@@ -157,7 +158,7 @@ export default function LoginScreen() {
             value={password}
             onChangeText={setPassword}
             placeholder="••••••••"
-            placeholderTextColor={colors.subtleText}
+            placeholderTextColor={colors.subtle}
             secureTextEntry
             textContentType="password"
             returnKeyType="done"
@@ -170,7 +171,7 @@ export default function LoginScreen() {
               borderRadius: 12,
               paddingHorizontal: 16,
               fontSize: 16,
-              color: colors.text,
+              color: colors.foreground,
               backgroundColor: colors.card,
               fontFamily: Fonts.sans,
               marginBottom: 28,
@@ -184,7 +185,7 @@ export default function LoginScreen() {
             style={({ pressed }) => ({
               height: 52,
               borderRadius: 12,
-              backgroundColor: pressed ? "#333333" : "#000000",
+              backgroundColor: pressed ? colors.tint + "dd" : colors.tint,
               alignItems: "center",
               justifyContent: "center",
               opacity: loading ? 0.7 : 1,
@@ -212,11 +213,11 @@ export default function LoginScreen() {
               <Text
                 style={{
                   fontSize: 15,
-                  color: colors.subtleText,
+                  color: colors.subtle,
                   fontFamily: Fonts.sans,
                 }}
               >
-                Don&apos;t have an account? <Text style={{ color: colors.text, fontWeight: "600" }}>Sign Up</Text>
+                Don&apos;t have an account? <Text style={{ color: colors.foreground, fontWeight: "600" }}>Sign Up</Text>
               </Text>
             </Pressable>
           </View>

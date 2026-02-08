@@ -4,7 +4,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useColorScheme } from "nativewind";
 import { AuthProvider, useAuth } from "@/context/auth-context";
 import LoginScreen from "@/app/login";
 import { ActivityIndicator, View } from "react-native";
@@ -14,7 +14,7 @@ export const unstable_settings = {
 };
 
 function AppContent() {
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useColorScheme();
   const { token, isLoading } = useAuth();
 
   if (colorScheme === undefined) {
@@ -23,7 +23,7 @@ function AppContent() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View className="flex-1 justify-center items-center bg-background">
         <ActivityIndicator size="large" />
       </View>
     );

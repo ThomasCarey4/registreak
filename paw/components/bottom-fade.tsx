@@ -1,5 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { themeColors } from "@/constants/colors";
+import { useColorScheme } from "nativewind";
 import { useCallback, useRef, useState } from "react";
 import { Animated, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 
@@ -32,9 +33,8 @@ export function useBottomFade() {
 }
 
 export function BottomFade({ opacity }: { opacity?: Animated.Value }) {
-  const colorScheme = useColorScheme() ?? "light";
-  const isDark = colorScheme === "dark";
-  const bg = isDark ? "rgba(21,23,24," : "rgba(255,255,255,";
+  const { colorScheme } = useColorScheme();
+  const bg = themeColors[colorScheme ?? "light"].backgroundRgba;
 
   return (
     <Animated.View
