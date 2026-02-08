@@ -3,7 +3,7 @@ Controllers for handling attendance verification business logic.
 """
 from flask import jsonify, current_app
 from datetime import datetime, timezone
-from .models import Lecture, LectureAttendance, Users
+from .models import Lecture, LectureAttendance, Users, Module, Course
 from .utils import generate_lecture_code, find_lecture_by_code
 from . import db
 
@@ -200,5 +200,145 @@ def verify_student_attendance(data):
         'already_attended': False,
         'current_streak': user.current_streak if user else 0,
         'longest_streak': user.longest_streak if user else 0
+    }), 200
+
+
+def get_student_attendance(student_id: str):
+    """
+    Get all lecture attendance for a student, grouped by date.
+    Returns data shaped for the streaks/calendar view.
+
+    Single query with explicit column selection — no N+1 or lazy loading.
+    Query path: lecture_attendance PK(user_id, lecture_id) → lectures PK → modules PK → courses PK.
+    """
+    now = datetime.now(timezone.utc)
+
+    rows = (
+        db.session.query(
+            Lecture.id,
+            Lecture.start_time,
+            Lecture.end_time,
+            Module.name,
+            Module.course_code,
+            LectureAttendance.is_attended,
+        )
+        .select_from(LectureAttendance)
+        .join(Lecture, LectureAttendance.lecture_id == Lecture.id)
+        .join(Module, Lecture.module_id == Module.id)
+        .filter(LectureAttendance.user_id == student_id)
+        .order_by(Lecture.start_time)
+        .all()
+    )
+
+    attendance: dict[str, dict] = {}
+    for row in rows:
+        date_key = row.start_time.strftime('%Y-%m-%d')
+        if date_key not in attendance:
+            attendance[date_key] = {'lectures': []}
+
+        # Future lectures (not yet ended) → attended = null
+        is_future = row.end_time > now
+
+        attendance[date_key]['lectures'].append({
+            'id': str(row.id),
+            'name': row.name,
+            'time': row.start_time.strftime('%H:%M'),
+            'endTime': row.end_time.strftime('%H:%M'),
+            'room': None,
+            'attended': None if is_future else row.is_attended,
+            'code': row.course_code,
+        })
+
+    return jsonify({'attendance': attendance}), 200
+
+
+def get_course_leaderboard(course_code: str, current_user_id: str):
+    """
+    Get leaderboard for a course — enrolled students ranked by streak.
+
+    Single aggregate query joining modules → lectures → attendance → users.
+    Filters by course_code, groups per student, orders by streak DESC.
+
+    Relies on:
+      - modules(course_code) index for course filtering
+      - lectures(module_id) index for module→lecture join
+      - lecture_attendance(lecture_id) index for attendance lookup
+    """
+    course = Course.query.filter_by(code=course_code).first()
+    if not course:
+        return jsonify({'error': 'Course not found'}), 404
+
+    now = datetime.now(timezone.utc)
+
+    # Total past lectures for this course (only count ended lectures)
+    total_lectures = (
+        db.session.query(db.func.count(Lecture.id))
+        .join(Module, Lecture.module_id == Module.id)
+        .filter(Module.course_code == course_code)
+        .filter(Lecture.end_time <= now)
+        .scalar()
+    ) or 0
+
+    # Aggregate attendance per student
+    student_stats = (
+        db.session.query(
+            Users.student_id,
+            Users.username,
+            Users.current_streak,
+            db.func.sum(
+                db.case(
+                    (LectureAttendance.is_attended == True, 1),
+                    else_=0
+                )
+            ).label('attended')
+        )
+        .select_from(LectureAttendance)
+        .join(Lecture, LectureAttendance.lecture_id == Lecture.id)
+        .join(Module, Lecture.module_id == Module.id)
+        .join(Users, LectureAttendance.user_id == Users.student_id)
+        .filter(Module.course_code == course_code)
+        .filter(Users.is_staff == False)
+        .group_by(Users.student_id, Users.username, Users.current_streak)
+        .order_by(Users.current_streak.desc())
+        .all()
+    )
+
+    students = [{
+        'id': s.student_id,
+        'name': s.username,
+        'attended': int(s.attended or 0),
+        'streak': s.current_streak,
+    } for s in student_stats]
+
+    return jsonify({
+        'courseCode': course_code,
+        'courseName': course.name,
+        'totalLectures': total_lectures,
+        'currentUserId': current_user_id,
+        'showTop': 10,
+        'students': students,
+    }), 200
+
+
+def get_student_courses(student_id: str):
+    """
+    Get distinct courses a student is enrolled in
+    (via lecture_attendance → lectures → modules → courses).
+
+    Single query with DISTINCT — no N+1.
+    """
+    courses = (
+        db.session.query(Course.code, Course.name)
+        .select_from(LectureAttendance)
+        .join(Lecture, LectureAttendance.lecture_id == Lecture.id)
+        .join(Module, Lecture.module_id == Module.id)
+        .join(Course, Module.course_code == Course.code)
+        .filter(LectureAttendance.user_id == student_id)
+        .distinct()
+        .all()
+    )
+
+    return jsonify({
+        'courses': [{'code': c.code, 'name': c.name} for c in courses]
     }), 200
 

@@ -2,12 +2,11 @@ import { BottomFade, useBottomFade } from "@/components/bottom-fade";
 import { RadialProgress } from "@/components/radial-progress";
 import { Colors } from "@/constants/theme";
 import { useAuth } from "@/context/auth-context";
-import rawData from "@/data/attendance-data.json";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Animated, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Animated, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Lecture {
@@ -16,15 +15,13 @@ interface Lecture {
   name: string;
   time: string;
   endTime: string;
-  room: string;
+  room: string | null;
   attended: boolean | null;
 }
 
 interface DayData {
   lectures: Lecture[];
 }
-
-const attendanceData = rawData.attendance as unknown as Record<string, DayData>;
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
@@ -164,31 +161,43 @@ export default function StreaksScreen() {
   const colors = Colors[colorScheme];
   const { user } = useAuth();
 
-  // Real streak data fetched from the backend
+  // Live data from the backend
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
+  const [attendanceData, setAttendanceData] = useState<Record<string, DayData>>({});
+  const [loadingAttendance, setLoadingAttendance] = useState(true);
 
-  // Re-fetch streak data every time this tab is focused
+  // Fetch streak + attendance data every time this tab is focused
   useFocusEffect(
     useCallback(() => {
       if (!user?.student_id) return;
+      let cancelled = false;
       (async () => {
         try {
-          const data = await apiService.getUserDetails(user.student_id) as {
-            current_streak: number;
-            longest_streak: number;
-          };
-          setStreak(data.current_streak);
-          setBestStreak(data.longest_streak);
+          setLoadingAttendance(true);
+          const [userDetails, attendanceRes] = await Promise.all([
+            apiService.getUserDetails(user.student_id) as Promise<{
+              current_streak: number;
+              longest_streak: number;
+            }>,
+            apiService.getAttendance(),
+          ]);
+          if (cancelled) return;
+          setStreak(userDetails.current_streak);
+          setBestStreak(userDetails.longest_streak);
+          setAttendanceData(attendanceRes.attendance as unknown as Record<string, DayData>);
         } catch (e) {
-          console.error("Failed to fetch streak data:", e);
+          console.error("Failed to fetch attendance data:", e);
+        } finally {
+          if (!cancelled) setLoadingAttendance(false);
         }
       })();
+      return () => { cancelled = true; };
     }, [user?.student_id])
   );
 
-  const overallRate = useMemo(() => calculateOverallRate(attendanceData), []);
-  const perfectDays = useMemo(() => calculatePerfectDays(attendanceData), []);
+  const overallRate = useMemo(() => calculateOverallRate(attendanceData), [attendanceData]);
+  const perfectDays = useMemo(() => calculatePerfectDays(attendanceData), [attendanceData]);
   const weeks = useMemo(() => getCalendarGrid(currentYear, currentMonth), [currentYear, currentMonth]);
 
   // Animated entrance for streak card
