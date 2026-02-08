@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, current_app
 from .models import Users, Course, Module, Lecture, LectureAttendance
-from .controllers import get_lecturer_current_lectures, verify_student_attendance
+from .controllers import get_lecturer_active_lectures, verify_student_attendance
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from datetime import datetime, timedelta
@@ -26,7 +26,7 @@ def get_code():
         if not user.get('is_staff', False):
             return jsonify({"error": "Only lecturers can access this endpoint"}), 403
         
-        return get_lecturer_current_lectures(lecturer_id)
+        return get_lecturer_active_lectures(lecturer_id)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

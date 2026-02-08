@@ -2,9 +2,9 @@
 Controllers for handling attendance verification business logic.
 """
 from flask import jsonify, current_app
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, time, timedelta
 from .models import Lecture, LectureAttendance, Users
-from .utils import generate_lecture_code, find_lecture_by_code
+from .utils import generate_lecture_code, verify_lecture_code
 from . import db
 
 
@@ -57,10 +57,19 @@ def update_streak(user: Users, previous_attendance: LectureAttendance | None) ->
         user.longest_streak = user.current_streak
 
 
-def get_lecturer_current_lectures(lecturer_id):
+def get_lecturer_active_lectures(lecturer_id):
     """
     Get all currently active lectures for a specific lecturer.
-    Returns lecture details with time-based verification codes.
+    
+    Returns lecture details including time-based verification codes.
+    This is a stateless operation—codes are generated on-demand from the
+    lecture_id and current time, so any pod can generate the same code.
+    
+    Args:
+        lecturer_id: The ID of the lecturer
+        
+    Returns:
+        JSON response with list of active lectures and their codes
     """
     # Get current UTC time
     now = datetime.now(timezone.utc)
@@ -105,10 +114,12 @@ def get_lecturer_current_lectures(lecturer_id):
 def verify_student_attendance(data):
     """
     Verify a student's attendance code and mark them as attended.
+    
+    Stateless verification: queries active lectures and verifies the code
+    against each one using TOTP, allowing this to work across multiple pods
+    without shared state or caching.
+    
     Expected data: {student_id, code}
-
-    The system uses an in-memory cache to quickly find which lecture
-    matches the provided code.
     """
     if not data:
         return jsonify({
@@ -133,36 +144,38 @@ def verify_student_attendance(data):
             'message': 'Invalid code format. Code must be 4 digits.'
         }), 400
 
-    # Look up lecture_id from code cache
-    lecture_id = find_lecture_by_code(code)
+    # Get current time and find all active lectures
+    now = datetime.now(timezone.utc)
+    active_lectures = Lecture.query.filter(
+        Lecture.start_time <= now,
+        Lecture.end_time >= now
+    ).all()
 
-    if not lecture_id:
+    if not active_lectures:
+        return jsonify({
+            'success': False,
+            'message': 'No active lectures at this time'
+        }), 400
+
+    # Try to verify code against each active lecture (stateless)
+    seed = current_app.config.get('ATTENDANCE_SECRET_SEED')
+    lecture = None
+
+    for candidate_lecture in active_lectures:
+        if verify_lecture_code(candidate_lecture.id, code, seed):
+            lecture = candidate_lecture
+            break
+
+    if not lecture:
         return jsonify({
             'success': False,
             'message': 'Invalid or expired code'
         }), 400
 
-    # Get the lecture to verify it's still active
-    now = datetime.now(timezone.utc)
-    lecture = Lecture.query.filter_by(id=lecture_id).first()
-
-    if not lecture:
-        return jsonify({
-            'success': False,
-            'message': 'Lecture not found'
-        }), 404
-
-    # Verify lecture is currently active
-    if not (lecture.start_time <= now <= lecture.end_time):
-        return jsonify({
-            'success': False,
-            'message': 'Lecture is not currently active'
-        }), 400
-
     # Find the attendance record for this student and lecture
     attendance = LectureAttendance.query.filter_by(
         user_id=student_id,
-        lecture_id=lecture_id
+        lecture_id=lecture.id
     ).first()
 
     if not attendance:
