@@ -184,7 +184,7 @@ export default function LoginScreen() {
             style={({ pressed }) => ({
               height: 52,
               borderRadius: 12,
-              backgroundColor: pressed ? LeedsRed.dark : LeedsRed.base,
+              backgroundColor: pressed ? "#333333" : "#000000",
               alignItems: "center",
               justifyContent: "center",
               opacity: loading ? 0.7 : 1,
