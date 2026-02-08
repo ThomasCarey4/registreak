@@ -1,5 +1,5 @@
 import { BottomFade, useBottomFade } from "@/components/bottom-fade";
-import { Colors, LeedsRed } from "@/constants/theme";
+import { palette, streakBadge } from "@/constants/colors";
 import rawData from "@/data/leaderboard-data.json";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import React, { useMemo } from "react";
@@ -64,42 +64,11 @@ function StreakBadge({ streak, isDark }: { streak: number; isDark: boolean }) {
 
   const isHot = streak >= 7;
   const isOnFire = streak >= 14;
+  const badge = isDark ? streakBadge.dark : streakBadge.light;
 
-  const bgColor = isDark
-    ? isOnFire
-      ? "rgba(145, 0, 0, 0.35)"
-      : isHot
-        ? "rgba(199, 0, 0, 0.25)"
-        : "rgba(255, 78, 54, 0.15)"
-    : isOnFire
-      ? LeedsRed.faded
-      : isHot
-        ? "rgba(199, 0, 0, 0.1)"
-        : "rgba(255, 78, 54, 0.08)";
-
-  const textColor = isDark
-    ? isOnFire
-      ? LeedsRed.pastel
-      : isHot
-        ? LeedsRed.bright
-        : "rgba(255, 138, 122, 0.9)"
-    : isOnFire
-      ? LeedsRed.dark
-      : isHot
-        ? LeedsRed.base
-        : LeedsRed.bright;
-
-  const borderColor = isDark
-    ? isOnFire
-      ? "rgba(255, 138, 122, 0.3)"
-      : isHot
-        ? "rgba(255, 78, 54, 0.25)"
-        : "rgba(255, 78, 54, 0.18)"
-    : isOnFire
-      ? "rgba(145, 0, 0, 0.2)"
-      : isHot
-        ? "rgba(199, 0, 0, 0.15)"
-        : "rgba(255, 78, 54, 0.15)";
+  const bgColor = isOnFire ? badge.fireBg : isHot ? badge.hotBg : badge.defaultBg;
+  const textColor = isOnFire ? badge.fireText : isHot ? badge.hotText : badge.defaultText;
+  const borderColor = isOnFire ? badge.fireBorder : isHot ? badge.hotBorder : badge.defaultBorder;
 
   return (
     <View
@@ -117,7 +86,7 @@ function StreakBadge({ streak, isDark }: { streak: number; isDark: boolean }) {
 export default function LeaderboardScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const isDark = colorScheme === "dark";
-  const colors = Colors[colorScheme];
+  const colors = palette[colorScheme];
 
   const displayItems = useMemo(() => buildLeaderboardDisplay(), []);
 
@@ -134,7 +103,7 @@ export default function LeaderboardScreen() {
   const { opacity: fadeOpacity, onScroll: onFadeScroll } = useBottomFade();
 
   return (
-    <View className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
+    <View className="flex-1 bg-background">
       <SafeAreaView className="flex-1" edges={["top"]}>
         <ScrollView
           className="flex-1"
@@ -144,8 +113,8 @@ export default function LeaderboardScreen() {
         >
           {/* Header */}
           <View className="px-5 pt-5 pb-2">
-            <Text style={{ fontSize: 32, fontWeight: "bold", marginBottom: 4, color: colors.text }}>Leaderboard</Text>
-            <Text style={{ fontSize: 15, color: colors.subtleText }}>{courseName}</Text>
+            <Text className="text-[32px] font-bold mb-1 text-foreground">Leaderboard</Text>
+            <Text className="text-[15px] text-subtle-text">{courseName}</Text>
           </View>
 
           {/* Top 10 List */}
@@ -176,29 +145,21 @@ export default function LeaderboardScreen() {
                     {medal ? (
                       <Text className="text-xl">{medal}</Text>
                     ) : (
-                      <Text className="text-[15px] font-bold" style={{ color: colors.rankText }}>
-                        {rank}
-                      </Text>
+                      <Text className="text-[15px] font-bold text-rank-text">{rank}</Text>
                     )}
                   </View>
 
                   {/* Name + YOU badge */}
                   <View className="flex-1 flex-row items-center gap-2 mr-2">
                     <Text
-                      className={`text-[15px] ${isCurrentUser ? "font-bold" : "font-medium"}`}
-                      style={{ color: colors.text }}
+                      className={`text-[15px] text-foreground ${isCurrentUser ? "font-bold" : "font-medium"}`}
                       numberOfLines={1}
                     >
                       {student.name}
                     </Text>
                     {isCurrentUser && (
-                      <View className="px-1.5 py-0.5 rounded" style={{ backgroundColor: colors.tint }}>
-                        <Text
-                          className="text-[9px] font-extrabold tracking-wide"
-                          style={{ color: isDark ? colors.background : "#ffffff" }}
-                        >
-                          YOU
-                        </Text>
+                      <View className="px-1.5 py-0.5 rounded bg-tint">
+                        <Text className="text-[9px] font-extrabold tracking-wide text-background">YOU</Text>
                       </View>
                     )}
                   </View>
@@ -215,14 +176,11 @@ export default function LeaderboardScreen() {
             <View className="px-4 pt-4 pb-10">
               {/* Divider with "Your Position" label */}
               <View className="flex-row items-center gap-3 mb-3 px-1">
-                <View className="flex-1 h-[1px]" style={{ backgroundColor: colors.divider }} />
-                <Text
-                  className="text-[11px] font-semibold tracking-wider uppercase"
-                  style={{ color: colors.subtleText }}
-                >
+                <View className="flex-1 h-[1px] bg-divider" />
+                <Text className="text-[11px] font-semibold tracking-wider uppercase text-subtle-text">
                   Your Position
                 </Text>
-                <View className="flex-1 h-[1px]" style={{ backgroundColor: colors.divider }} />
+                <View className="flex-1 h-[1px] bg-divider" />
               </View>
 
               <View
@@ -240,23 +198,16 @@ export default function LeaderboardScreen() {
               >
                 {/* Rank */}
                 <View className="w-9 items-center mr-3">
-                  <Text className="text-[17px] font-bold" style={{ color: colors.tint }}>
-                    {currentUserItem.rank}
-                  </Text>
+                  <Text className="text-[17px] font-bold text-tint">{currentUserItem.rank}</Text>
                 </View>
 
                 {/* Name + YOU badge */}
                 <View className="flex-1 flex-row items-center gap-2 mr-2">
-                  <Text className="text-[15px] font-bold" style={{ color: colors.text }} numberOfLines={1}>
+                  <Text className="text-[15px] font-bold text-foreground" numberOfLines={1}>
                     {currentUserItem.student.name}
                   </Text>
-                  <View className="px-1.5 py-0.5 rounded" style={{ backgroundColor: colors.tint }}>
-                    <Text
-                      className="text-[9px] font-extrabold tracking-wide"
-                      style={{ color: isDark ? colors.background : "#ffffff" }}
-                    >
-                      YOU
-                    </Text>
+                  <View className="px-1.5 py-0.5 rounded bg-tint">
+                    <Text className="text-[9px] font-extrabold tracking-wide text-background">YOU</Text>
                   </View>
                 </View>
 

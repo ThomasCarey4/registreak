@@ -1,5 +1,6 @@
-import { LinearGradient } from "expo-linear-gradient";
+import { palette } from "@/constants/colors";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { LinearGradient } from "expo-linear-gradient";
 import { useCallback, useRef, useState } from "react";
 import { Animated, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 
@@ -33,8 +34,7 @@ export function useBottomFade() {
 
 export function BottomFade({ opacity }: { opacity?: Animated.Value }) {
   const colorScheme = useColorScheme() ?? "light";
-  const isDark = colorScheme === "dark";
-  const bg = isDark ? "rgba(21,23,24," : "rgba(255,255,255,";
+  const colors = palette[colorScheme];
 
   return (
     <Animated.View
@@ -48,7 +48,7 @@ export function BottomFade({ opacity }: { opacity?: Animated.Value }) {
       }}
       pointerEvents="none"
     >
-      <LinearGradient colors={[`${bg}0)`, `${bg}0.9)`, `${bg}1)`]} style={{ flex: 1 }} />
+      <LinearGradient colors={[colors.fadeStart, colors.fadeMid, colors.fadeEnd]} style={{ flex: 1 }} />
     </Animated.View>
   );
 }

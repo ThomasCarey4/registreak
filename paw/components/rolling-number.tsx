@@ -18,7 +18,7 @@ export function RollingNumber({
   value,
   animate,
   fontSize = 56,
-  color = "#374151",
+  color = "#212529",
   fontWeight = "800",
   delay = 0,
 }: RollingNumberProps) {

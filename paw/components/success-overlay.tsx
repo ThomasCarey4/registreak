@@ -12,6 +12,8 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
 
+import { status } from "@/constants/colors";
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface SuccessOverlayProps {
@@ -206,7 +208,7 @@ const styles = StyleSheet.create({
   },
   bgLayer1: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#16A34A",
+    backgroundColor: status.successOverlay,
   },
   bgLayer2: {
     ...StyleSheet.absoluteFillObject,

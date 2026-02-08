@@ -1,3 +1,79 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --color-background: #ffffff;
+    --color-foreground: #212529;
+    --color-foreground-muted: #636363;
+    --color-card: #f9fafb;
+    --color-card-highlight: #f9fafb;
+    --color-surface: #f3f2f1;
+    --color-tint: #3b3b3b;
+    --color-icon: #636363;
+    --color-tab-default: #bcb8b3;
+    --color-tab-active: #3b3b3b;
+    --color-border: #c9c8c5;
+    --color-divider: #c9c8c5;
+    --color-rank-text: #bcb8b3;
+    --color-subtle-text: #636363;
+
+    --color-calendar-weekday: #8e8e93;
+    --color-calendar-cell: #e5e5ea;
+    --color-calendar-cell-muted: #d1d1d6;
+    --color-calendar-future: #c7c7cc;
+
+    --color-toast-error-bg: #fff5f5;
+    --color-toast-error-border: #ffcdd2;
+    --color-toast-error-icon-bg: #ffcdd2;
+    --color-toast-error-title: #c62828;
+    --color-toast-error-body: #e57373;
+    --color-toast-error-progress: #ef5350;
+
+    --color-cell-border: #d0d5dd;
+    --color-cell-error-bg: #fbe9e7;
+    --color-cell-success-bg: #e8f5e9;
+
+    --color-lecture-card: #ffffff;
+
+    --color-badge-best-bg: rgba(255, 107, 53, 0.1);
+  }
+
+  .dark {
+    --color-background: #0a0202;
+    --color-foreground: #f3f2f1;
+    --color-foreground-muted: #6e6b6b;
+    --color-card: #1c1c1e;
+    --color-card-highlight: #343436;
+    --color-surface: #0a0202;
+    --color-tint: #eae8e6;
+    --color-icon: #6a645d;
+    --color-tab-default: #6a645d;
+    --color-tab-active: #eae8e6;
+    --color-border: #48484a;
+    --color-divider: #48484a;
+    --color-rank-text: #6e6b6b;
+    --color-subtle-text: #6e6b6b;
+
+    --color-calendar-weekday: #8e8e93;
+    --color-calendar-cell: #2c2c2e;
+    --color-calendar-cell-muted: #3a3a3c;
+    --color-calendar-future: #555555;
+
+    --color-toast-error-bg: #2b1c1c;
+    --color-toast-error-border: #4a2d2d;
+    --color-toast-error-icon-bg: #4a2d2d;
+    --color-toast-error-title: #ef9a9a;
+    --color-toast-error-body: #ef9a9a;
+    --color-toast-error-progress: #f44336;
+
+    --color-cell-border: #333333;
+    --color-cell-error-bg: #3a1a1a;
+    --color-cell-success-bg: #1a3a1a;
+
+    --color-lecture-card: #1c1c1e;
+
+    --color-badge-best-bg: rgba(255, 107, 53, 0.15);
+  }
+}

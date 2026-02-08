@@ -2,7 +2,7 @@ import { BottomFade, useBottomFade } from "@/components/bottom-fade";
 import { FireCelebration } from "@/components/fire-celebration";
 import { RadialProgress } from "@/components/radial-progress";
 import { RollingNumber } from "@/components/rolling-number";
-import { Colors } from "@/constants/theme";
+import { accent, palette, status } from "@/constants/colors";
 import rawData from "@/data/attendance-data.json";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -161,7 +161,7 @@ export default function StreaksScreen() {
 
   const colorScheme = useColorScheme() ?? "light";
   const isDark = colorScheme === "dark";
-  const colors = Colors[colorScheme];
+  const colors = palette[colorScheme];
   const { celebrate } = useLocalSearchParams<{ celebrate?: string }>();
   const [showCelebration, setShowCelebration] = useState(false);
   const router = useRouter();
@@ -227,15 +227,15 @@ export default function StreaksScreen() {
   const getProgressColor = (attended: number, total: number): string => {
     if (total === 0) return "transparent";
     const ratio = attended / total;
-    if (ratio >= 1) return "#4CAF50";
-    if (ratio >= 0.5) return "#FF9800";
-    return "#F44336";
+    if (ratio >= 1) return accent.progressGood;
+    if (ratio >= 0.5) return accent.progressMid;
+    return accent.progressLow;
   };
 
   const { opacity: fadeOpacity, onScroll: onFadeScroll } = useBottomFade();
 
   return (
-    <View className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
+    <View className="flex-1 bg-background">
       <FireCelebration visible={showCelebration} />
       <SafeAreaView className="flex-1" edges={["top"]}>
         <ScrollView
@@ -246,9 +246,7 @@ export default function StreaksScreen() {
           scrollEventThrottle={16}
         >
           {/* Header */}
-          <Text className={`text-[32px] font-bold mb-5 ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
-            Attendance
-          </Text>
+          <Text className="text-[32px] font-bold mb-5 text-foreground">Attendance</Text>
 
           {/* Streak Counter */}
           <Animated.View
@@ -260,7 +258,7 @@ export default function StreaksScreen() {
             <View
               className="rounded-2xl mb-4 overflow-hidden shadow-sm"
               style={{
-                backgroundColor: isDark ? "#1C1C1E" : "#F9FAFB",
+                backgroundColor: colors.card,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: isDark ? 0 : 0.08,
@@ -273,7 +271,7 @@ export default function StreaksScreen() {
                   value={streak}
                   animate={showCelebration}
                   fontSize={56}
-                  color={isDark ? "#ECEDEE" : "#374151"}
+                  color={colors.foreground}
                   fontWeight="800"
                   delay={300}
                 />
@@ -282,7 +280,7 @@ export default function StreaksScreen() {
                   className="font-semibold uppercase tracking-[3px]"
                   style={{
                     fontSize: 13,
-                    color: isDark ? "rgba(236,237,238,0.5)" : "rgba(55,65,81,0.4)",
+                    color: colors.streakLabel,
                     marginTop: 2,
                   }}
                 >
@@ -290,15 +288,8 @@ export default function StreaksScreen() {
                 </Text>
 
                 {streak >= bestStreak && streak > 0 && (
-                  <View
-                    className="mt-3 rounded-full px-3 py-1"
-                    style={{
-                      backgroundColor: isDark ? "rgba(255,107,53,0.15)" : "rgba(255,107,53,0.1)",
-                    }}
-                  >
-                    <Text className="text-xs font-bold" style={{ color: "#FF6B35" }}>
-                      🏆 Personal Best!
-                    </Text>
+                  <View className="mt-3 rounded-full px-3 py-1 bg-badge-best-bg">
+                    <Text className="text-xs font-bold text-badge-best-text">🏆 Personal Best!</Text>
                   </View>
                 )}
               </View>
@@ -308,7 +299,7 @@ export default function StreaksScreen() {
                 style={{
                   height: 1,
                   marginHorizontal: 20,
-                  backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+                  backgroundColor: colors.dividerSubtle,
                 }}
               />
 
@@ -319,7 +310,7 @@ export default function StreaksScreen() {
                     className="font-bold"
                     style={{
                       fontSize: 22,
-                      color: isDark ? "#ECEDEE" : "#374151",
+                      color: colors.foreground,
                     }}
                   >
                     {bestStreak}
@@ -328,7 +319,7 @@ export default function StreaksScreen() {
                     className="font-medium mt-0.5"
                     style={{
                       fontSize: 11,
-                      color: isDark ? "rgba(236,237,238,0.4)" : "rgba(55,65,81,0.35)",
+                      color: colors.statsLabel,
                     }}
                   >
                     Best Streak
@@ -338,7 +329,7 @@ export default function StreaksScreen() {
                 <View
                   style={{
                     width: 1,
-                    backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+                    backgroundColor: colors.dividerSubtle,
                   }}
                 />
 
@@ -347,7 +338,7 @@ export default function StreaksScreen() {
                     className="font-bold"
                     style={{
                       fontSize: 22,
-                      color: isDark ? "#ECEDEE" : "#374151",
+                      color: colors.foreground,
                     }}
                   >
                     {overallRate}%
@@ -356,7 +347,7 @@ export default function StreaksScreen() {
                     className="font-medium mt-0.5"
                     style={{
                       fontSize: 11,
-                      color: isDark ? "rgba(236,237,238,0.4)" : "rgba(55,65,81,0.35)",
+                      color: colors.statsLabel,
                     }}
                   >
                     Attendance
@@ -366,7 +357,7 @@ export default function StreaksScreen() {
                 <View
                   style={{
                     width: 1,
-                    backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+                    backgroundColor: colors.dividerSubtle,
                   }}
                 />
 
@@ -375,7 +366,7 @@ export default function StreaksScreen() {
                     className="font-bold"
                     style={{
                       fontSize: 22,
-                      color: isDark ? "#ECEDEE" : "#374151",
+                      color: colors.foreground,
                     }}
                   >
                     {perfectDays}
@@ -384,7 +375,7 @@ export default function StreaksScreen() {
                     className="font-medium mt-0.5"
                     style={{
                       fontSize: 11,
-                      color: isDark ? "rgba(236,237,238,0.4)" : "rgba(55,65,81,0.35)",
+                      color: colors.statsLabel,
                     }}
                   >
                     Perfect Days
@@ -395,13 +386,11 @@ export default function StreaksScreen() {
           </Animated.View>
 
           {/* Calendar Card */}
-          <View className={`rounded-2xl p-4 mb-4 ${isDark ? "bg-[#1C1C1E]" : "bg-[#F9FAFB]"}`}>
+          <View className="rounded-2xl p-4 mb-4" style={{ backgroundColor: colors.card }}>
             {/* Month Navigation */}
             <View className="flex-row justify-between items-center mb-4">
               <TouchableOpacity onPress={goToPrevMonth} className="w-9 h-9 justify-center items-center">
-                <Text className={`text-[28px] font-light leading-8 ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
-                  ‹
-                </Text>
+                <Text className="text-[28px] font-light leading-8 text-foreground">‹</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
@@ -411,14 +400,12 @@ export default function StreaksScreen() {
                 }}
                 activeOpacity={0.6}
               >
-                <Text className={`text-[17px] font-semibold ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
+                <Text className="text-[17px] font-semibold text-foreground">
                   {MONTHS[currentMonth]} {currentYear}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={goToNextMonth} className="w-9 h-9 justify-center items-center">
-                <Text className={`text-[28px] font-light leading-8 ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
-                  ›
-                </Text>
+                <Text className="text-[28px] font-light leading-8 text-foreground">›</Text>
               </TouchableOpacity>
             </View>
 
@@ -426,7 +413,7 @@ export default function StreaksScreen() {
             <View className="flex-row mb-2">
               {WEEKDAYS.map((day) => (
                 <View key={day} className="flex-1 items-center">
-                  <Text className="text-xs font-semibold uppercase text-[#8E8E93]">{day}</Text>
+                  <Text className="text-xs font-semibold uppercase text-calendar-weekday">{day}</Text>
                 </View>
               ))}
             </View>
@@ -471,13 +458,9 @@ export default function StreaksScreen() {
                                 strokeWidth={3}
                                 progress={progress}
                                 progressColor={
-                                  hasOnlyScheduled
-                                    ? isDark
-                                      ? "#3A3A3C"
-                                      : "#D1D1D6"
-                                    : getProgressColor(attended, total)
+                                  hasOnlyScheduled ? colors.calendarCellMuted : getProgressColor(attended, total)
                                 }
-                                backgroundColor={isDark ? "#2C2C2E" : "#E5E5EA"}
+                                backgroundColor={colors.calendarCell}
                                 segments={segments}
                               />
                             </View>
@@ -490,7 +473,7 @@ export default function StreaksScreen() {
                               style={{
                                 width: 30,
                                 height: 30,
-                                backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+                                backgroundColor: colors.selectionHighlight,
                               }}
                             />
                           )}
@@ -499,15 +482,7 @@ export default function StreaksScreen() {
                             style={{
                               fontSize: 15,
                               fontWeight: isSelected || isToday ? "700" : "500",
-                              color: isFuture
-                                ? isDark
-                                  ? "#555"
-                                  : "#C7C7CC"
-                                : isToday
-                                  ? colors.tint
-                                  : isDark
-                                    ? "#fff"
-                                    : "#374151",
+                              color: isFuture ? colors.calendarFuture : isToday ? colors.tint : colors.foreground,
                             }}
                           >
                             {day}
@@ -539,7 +514,7 @@ export default function StreaksScreen() {
                 style={{
                   fontSize: 15,
                   fontWeight: "600",
-                  color: isDark ? "rgba(236,237,238,0.8)" : "rgba(55,65,81,0.7)",
+                  color: colors.lectureDatePrimary,
                 }}
               >
                 {(() => {
@@ -552,7 +527,7 @@ export default function StreaksScreen() {
                 style={{
                   fontSize: 13,
                   fontWeight: "400",
-                  color: isDark ? "rgba(236,237,238,0.35)" : "rgba(55,65,81,0.35)",
+                  color: colors.lectureDateSecondary,
                   marginLeft: 6,
                 }}
               >
@@ -568,7 +543,7 @@ export default function StreaksScreen() {
               <View
                 className="rounded-2xl overflow-hidden"
                 style={{
-                  backgroundColor: isDark ? "#1C1C1E" : "#fff",
+                  backgroundColor: colors.lectureCardBg,
                   shadowColor: "#000",
                   shadowOffset: { width: 0, height: 1 },
                   shadowOpacity: isDark ? 0 : 0.06,
@@ -582,7 +557,7 @@ export default function StreaksScreen() {
                         style={{
                           height: 1,
                           marginHorizontal: 16,
-                          backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+                          backgroundColor: colors.dividerSubtle,
                         }}
                       />
                     )}
@@ -596,12 +571,10 @@ export default function StreaksScreen() {
                           marginRight: 12,
                           backgroundColor:
                             lecture.attended === null
-                              ? isDark
-                                ? "#3A3A3C"
-                                : "#C7C7CC"
+                              ? colors.calendarCellMuted
                               : lecture.attended
-                                ? "#4CAF50"
-                                : "#F44336",
+                                ? status.success
+                                : status.error,
                         }}
                       />
 
@@ -611,7 +584,7 @@ export default function StreaksScreen() {
                           style={{
                             fontSize: 14,
                             fontWeight: "600",
-                            color: isDark ? "#ECEDEE" : "#374151",
+                            color: colors.foreground,
                           }}
                           numberOfLines={1}
                         >
@@ -621,7 +594,7 @@ export default function StreaksScreen() {
                           style={{
                             fontSize: 13,
                             fontWeight: "400",
-                            color: isDark ? "rgba(236,237,238,0.5)" : "rgba(55,65,81,0.5)",
+                            color: colors.lectureSubtitle,
                             marginTop: 2,
                           }}
                         >
@@ -631,7 +604,7 @@ export default function StreaksScreen() {
                           style={{
                             fontSize: 11,
                             fontWeight: "500",
-                            color: isDark ? "rgba(236,237,238,0.3)" : "rgba(55,65,81,0.3)",
+                            color: colors.lectureCode,
                             marginTop: 2,
                           }}
                           numberOfLines={1}
@@ -647,7 +620,7 @@ export default function StreaksScreen() {
                             fontSize: 13,
                             fontWeight: "600",
                             fontVariant: ["tabular-nums"],
-                            color: isDark ? "rgba(236,237,238,0.7)" : "rgba(55,65,81,0.6)",
+                            color: colors.lectureTime,
                           }}
                         >
                           {lecture.time}
@@ -656,7 +629,7 @@ export default function StreaksScreen() {
                           style={{
                             fontSize: 11,
                             fontVariant: ["tabular-nums"],
-                            color: isDark ? "rgba(236,237,238,0.3)" : "rgba(55,65,81,0.3)",
+                            color: colors.lectureTimeEnd,
                             marginTop: 1,
                           }}
                         >
@@ -671,13 +644,13 @@ export default function StreaksScreen() {
               <View
                 className="rounded-2xl py-10 items-center"
                 style={{
-                  backgroundColor: isDark ? "#1C1C1E" : "#fff",
+                  backgroundColor: colors.lectureCardBg,
                 }}
               >
                 <Text
                   style={{
                     fontSize: 13,
-                    color: isDark ? "rgba(236,237,238,0.3)" : "rgba(55,65,81,0.3)",
+                    color: colors.noLecturesText,
                   }}
                 >
                   No lectures scheduled
