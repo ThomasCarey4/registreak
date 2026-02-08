@@ -471,7 +471,6 @@ export default function StreaksScreen() {
                         <Text className="text-[14px] font-semibold text-foreground" numberOfLines={1}>
                           {lecture.name}
                         </Text>
-                        <Text className="text-[13px] font-normal text-foreground/50 mt-0.5">{lecture.room}</Text>
                         <Text className="text-[11px] font-medium text-foreground/30 mt-0.5" numberOfLines={1}>
                           {lecture.code}
                         </Text>
