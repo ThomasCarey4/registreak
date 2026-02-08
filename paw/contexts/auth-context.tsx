@@ -3,9 +3,7 @@ import { createContext, useContext, useEffect, useMemo, useReducer } from "react
 import { Platform } from "react-native";
 
 // ─── API base URL ─────────────────────────────────────
-const API_BASE = __DEV__
-  ? "http://10.41.146.141:5000"
-  : "https://your-production-api.com"; // TODO: set production URL
+const API_BASE = __DEV__ ? "http://10.41.146.141:5000" : "https://your-production-api.com"; // TODO: set production URL
 
 // ─── Types ────────────────────────────────────────────
 type User = {
