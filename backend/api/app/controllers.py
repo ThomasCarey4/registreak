@@ -283,7 +283,8 @@ def get_course_leaderboard(course_code: str, current_user_id: str):
     student_stats = (
         db.session.query(
             Users.student_id,
-            Users.username,
+            Users.first_name,
+            Users.last_name,
             Users.current_streak,
             db.func.sum(
                 db.case(
@@ -298,14 +299,14 @@ def get_course_leaderboard(course_code: str, current_user_id: str):
         .join(Users, LectureAttendance.user_id == Users.student_id)
         .filter(Module.course_code == course_code)
         .filter(Users.is_staff == False)
-        .group_by(Users.student_id, Users.username, Users.current_streak)
+        .group_by(Users.student_id, Users.first_name, Users.last_name, Users.current_streak)
         .order_by(Users.current_streak.desc())
         .all()
     )
 
     students = [{
         'id': s.student_id,
-        'name': s.username,
+        'name': f'{s.first_name} {s.last_name}',
         'attended': int(s.attended or 0),
         'streak': s.current_streak,
     } for s in student_stats]

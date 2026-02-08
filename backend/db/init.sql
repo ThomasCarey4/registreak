@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
     student_id TEXT PRIMARY KEY,
     username TEXT NOT NULL,
     password TEXT NOT NULL,
+    first_name TEXT NOT NULL DEFAULT '',
+    last_name TEXT NOT NULL DEFAULT '',
     "isStaff" BOOLEAN DEFAULT FALSE NOT NULL,
     current_streak INTEGER DEFAULT 0 NOT NULL,
     longest_streak INTEGER DEFAULT 0 NOT NULL

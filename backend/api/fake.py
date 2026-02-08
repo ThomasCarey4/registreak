@@ -2,6 +2,7 @@ import random
 import os
 from datetime import datetime, timedelta, timezone
 from werkzeug.security import generate_password_hash
+from faker import Faker
 
 # Set database URL before importing app
 os.environ.setdefault('DATABASE_URL', 'postgresql://myuser:mypassword@localhost:5432/postgres')
@@ -10,62 +11,95 @@ from app import create_app, db
 from app.models import Users, Course, Module, Lecture, LectureAttendance
 
 app = create_app()
+fake = Faker('en_GB')  # British English for Leeds University context
+Faker.seed(42)         # Reproducible names across runs
 
-# Leeds University course codes and modules
+# Leeds University courses (top-level programmes) and their modules
 COURSES = [
-  ("COMP1711", "Procedural Programming"),
-  ("COMP2211", "Operating Systems"),
-  ("COMP2311", "Software Engineering"),
-  ("COMP3711", "Machine Learning"),
-  ("COMP3911", "Final Year Project"),
+  ("COMP", "Computer Science"),
+  ("MATH", "Mathematics"),
+  ("ELEC", "Electronic Engineering"),
 ]
 
 MODULES_BY_COURSE = {
-  "COMP1711": ["Introduction to Python", "C Programming Fundamentals", "Algorithm Design"],
-  "COMP2211": ["Process Management", "Memory Systems", "File Systems"],
-  "COMP2311": ["Requirements Engineering", "Design Patterns", "Testing Methodologies"],
-  "COMP3711": ["Supervised Learning", "Neural Networks", "Deep Learning"],
-  "COMP3911": ["Project Planning", "Research Methods", "Implementation"],
+  "COMP": [
+    "Procedural Programming",
+    "Operating Systems",
+    "Software Engineering",
+    "Machine Learning",
+    "Final Year Project",
+  ],
+  "MATH": [
+    "Linear Algebra",
+    "Calculus",
+    "Probability & Statistics",
+    "Number Theory",
+  ],
+  "ELEC": [
+    "Circuit Analysis",
+    "Digital Electronics",
+    "Embedded Systems",
+    "Signal Processing",
+  ],
 }
+
+# Weekly timetable slots: (weekday 0=Mon, hour 9-17)
+# Each course gets its own non-overlapping timetable.
+# 2 slots per module, up to 5 modules = 10 slots needed.
+# 5 weekdays × 9 hours = 45 available slots, plenty of room.
+def build_course_timetable(module_names: list[str]) -> dict[str, list[tuple[int, int]]]:
+    """Return {module_name: [(weekday, hour), (weekday, hour)]} with no overlaps."""
+    all_slots = [(d, h) for d in range(5) for h in range(9, 18)]  # Mon-Fri, 9-17
+    random.shuffle(all_slots)
+    timetable: dict[str, list[tuple[int, int]]] = {}
+    idx = 0
+    for name in module_names:
+        timetable[name] = [all_slots[idx], all_slots[idx + 1]]
+        idx += 2
+    return timetable
 
 # Generate students
 students = []
 for i in range(1, 51):
-  student_id = f"sc{str(i).zfill(4)}abc"  # Leeds format: sc followed by numbers and letters
+  student_id = f"sc{str(i).zfill(4)}abc"
+  first = fake.first_name()
+  last = fake.last_name()
   students.append({
     'student_id': student_id,
     'username': f"student{i}",
     'password': generate_password_hash("password123"),
-    'is_staff': False
+    'is_staff': False,
+    'first_name': first,
+    'last_name': last,
   })
 
 # Generate students with IDs 100-150 for Dr. Johnson's lectures
 dr_johnson_students = []
 for i in range(100, 151):
   student_id = str(i)
+  first = fake.first_name()
+  last = fake.last_name()
   dr_johnson_students.append({
     'student_id': student_id,
     'username': f"student{i}",
     'password': generate_password_hash("password123"),
-    'is_staff': False
+    'is_staff': False,
+    'first_name': first,
+    'last_name': last,
   })
 
 # Add staff members (lecturers)
 staff = [
-  {'student_id': '69', 'username': 'dr_johnson', 'password': generate_password_hash("staff123"), 'is_staff': True},
-  {'student_id': 'staff001', 'username': 'dr_smith', 'password': generate_password_hash("staff123"), 'is_staff': True},
-  {'student_id': 'staff002', 'username': 'prof_jones', 'password': generate_password_hash("staff123"), 'is_staff': True},
-  {'student_id': 'staff003', 'username': 'prof_williams', 'password': generate_password_hash("staff123"), 'is_staff': True},
+  {'student_id': '69', 'username': 'dr_johnson', 'password': generate_password_hash("staff123"), 'is_staff': True, 'first_name': 'David', 'last_name': 'Johnson'},
+  {'student_id': 'staff001', 'username': 'dr_smith', 'password': generate_password_hash("staff123"), 'is_staff': True, 'first_name': 'Eleanor', 'last_name': 'Smith'},
+  {'student_id': 'staff002', 'username': 'prof_jones', 'password': generate_password_hash("staff123"), 'is_staff': True, 'first_name': 'Richard', 'last_name': 'Jones'},
+  {'student_id': 'staff003', 'username': 'prof_williams', 'password': generate_password_hash("staff123"), 'is_staff': True, 'first_name': 'Margaret', 'last_name': 'Williams'},
 ]
 
 with app.app_context():
   # Delete all existing data first
   print("Deleting existing data...")
-  LectureAttendance.query.delete()
-  Lecture.query.delete()
-  Module.query.delete()
-  Course.query.delete()
-  Users.query.delete()
+  db.session.execute(db.text('TRUNCATE lecture_attendance, lectures, modules, courses, users CASCADE'))
   db.session.commit()
   print("Existing data deleted.")
 
@@ -83,59 +117,78 @@ with app.app_context():
 
   db.session.commit()
 
-  # Insert modules and lectures
+  # Insert modules, build timetables, and create recurring lectures
   print("Adding modules and lectures...")
-  start_date = datetime.now(timezone.utc) - timedelta(days=60)
-  
+  NUM_WEEKS = 12
+  # Semester starts 60 days ago, aligned to a Monday
+  raw_start = datetime.now(timezone.utc) - timedelta(days=60)
+  # Roll back to the previous Monday
+  semester_start = raw_start - timedelta(days=raw_start.weekday())
+  semester_start = semester_start.replace(hour=0, minute=0, second=0, microsecond=0)
+
   # Track lectures for lecturer id 69
   lecturer_69_lectures = []
   dr_johnson_module_count = 0
-  
-  module_count = 0
+
+  # Maps: course_code → list of (module_id, [(weekday,hour), ...])
+  course_timetables: dict[str, list[tuple[int, list[tuple[int, int]]]]] = {}
+  # All lecture IDs that belong to the regular timetable (not Dr. Johnson's extras)
+  regular_lecture_ids: dict[int, list[int]] = {}  # module_id → [lecture_id, ...]
+
+  non_dr_j_staff = [s for s in staff if s['student_id'] != '69']
+  staff_idx = 0
+
   for course_code, module_names in MODULES_BY_COURSE.items():
+    timetable = build_course_timetable(module_names)
+    course_timetables[course_code] = []
+
     for module_name in module_names:
       module = Module(name=module_name, course_code=course_code)
       db.session.add(module)
       db.session.flush()
-      
-      # Assign lecturer id 69 to first 2 modules, others to remaining staff
+
+      slots = timetable[module_name]
+      course_timetables[course_code].append((module.id, slots))
+      regular_lecture_ids[module.id] = []
+
+      # Assign lecturer: first 2 modules to dr_johnson, rest round-robin other staff
       if dr_johnson_module_count < 2:
         assigned_lecturer = '69'
         dr_johnson_module_count += 1
       else:
-        assigned_lecturer = staff[module_count % len(staff)]['student_id']
-      
-      module_count += 1
+        assigned_lecturer = non_dr_j_staff[staff_idx % len(non_dr_j_staff)]['student_id']
+        staff_idx += 1
 
-      # Create 12 lectures per module (one semester)
-      for week in range(12):
-        lecture_start = start_date + timedelta(weeks=week, hours=9)
-        lecture_end = lecture_start + timedelta(hours=1)
+      # Create recurring lectures: same day/hour each week for NUM_WEEKS
+      for week in range(NUM_WEEKS):
+        for weekday, hour in slots:
+          lecture_start = semester_start + timedelta(weeks=week, days=weekday, hours=hour)
+          lecture_end = lecture_start + timedelta(hours=1)
 
-        lecture = Lecture(
-          module_id=module.id,
-          lecturer_id=assigned_lecturer,
-          start_time=lecture_start,
-          end_time=lecture_end
-        )
-        db.session.add(lecture)
-        db.session.flush()
-        
-        if assigned_lecturer == '69':
-          lecturer_69_lectures.append(lecture.id)
+          lecture = Lecture(
+            module_id=module.id,
+            lecturer_id=assigned_lecturer,
+            start_time=lecture_start,
+            end_time=lecture_end
+          )
+          db.session.add(lecture)
+          db.session.flush()
+
+          regular_lecture_ids[module.id].append(lecture.id)
+          if assigned_lecturer == '69':
+            lecturer_69_lectures.append(lecture.id)
 
   # Add back-to-back lectures for lecturer 69 (past 14 days + next 7 days)
   print("Adding back-to-back lectures for lecturer 69...")
   base_start = datetime.now(timezone.utc) - timedelta(days=14)
   first_module_id = Module.query.first().id
-  
+
   # Create 21 days of hourly lectures: 14 days in the past + 7 days into the future
   for day in range(21):
-    # Lectures every hour, 24 hours a day (0-23)
     for hour in range(24):
       lecture_start = base_start + timedelta(days=day, hours=hour)
       lecture_end = lecture_start + timedelta(hours=1)
-      
+
       lecture = Lecture(
         module_id=first_module_id,
         lecturer_id='69',
@@ -148,39 +201,33 @@ with app.app_context():
 
   db.session.commit()
 
-  # Create student-lecture attendance records
-  print("Adding lecture attendance records...")
-  all_lectures = Lecture.query.all()
-  
-  # First, assign students 100-150 to ALL of Dr. Johnson's lectures
+  # ── Enrol students 1-50: each in exactly one course ────────────────────
+  print("Enrolling students 1-50 into courses...")
+  course_codes = list(course_timetables.keys())
+
+  for i, student_data in enumerate(students):
+    sid = student_data['student_id']
+    # Distribute students roughly evenly across courses
+    course_code = course_codes[i % len(course_codes)]
+
+    # Enrol in every lecture of every module in that course
+    for module_id, _slots in course_timetables[course_code]:
+      for lecture_id in regular_lecture_ids[module_id]:
+        db.session.add(LectureAttendance(
+          user_id=sid,
+          lecture_id=lecture_id,
+          is_attended=False
+        ))
+
+  # Assign students 100-150 to ALL Dr. Johnson lectures
   print("Assigning students 100-150 to all Dr. Johnson lectures...")
   for lecture_id in lecturer_69_lectures:
     for student in dr_johnson_students:
-      attendance = LectureAttendance(
+      db.session.add(LectureAttendance(
         user_id=student['student_id'],
         lecture_id=lecture_id,
         is_attended=False
-      )
-      db.session.add(attendance)
-  
-  # Then, randomly assign original students to other lectures
-  for lecture in all_lectures:
-    # Skip Dr. Johnson's lectures as they're already assigned
-    if lecture.id in lecturer_69_lectures:
-      continue
-      
-    # Randomly assign 20-40 students to each lecture
-    num_students_assigned = random.randint(20, 40)
-    assigned_students = random.sample(students, num_students_assigned)
-    
-    for student in assigned_students:
-      # Initially all set to attended=False (not attended yet)
-      attendance = LectureAttendance(
-        user_id=student['student_id'],
-        lecture_id=lecture.id,
-        is_attended=False
-      )
-      db.session.add(attendance)
+      ))
   
   db.session.commit()
   
