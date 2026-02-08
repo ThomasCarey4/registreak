@@ -14,26 +14,6 @@ export const LeedsRed = {
   faded: "#ffeded",
 } as const;
 
-// ── Brand Greens / Teal ──
-export const LeedsGreen = {
-  dark: "#156265",
-  bright: "#026E7A",
-  light: "#ABC6C7",
-} as const;
-
-// ── New Brand Teal ──
-export const LeedsTeal = {
-  base: "#00D0A0",
-  dark: "#00A881",
-} as const;
-
-// ── Tertiary Blues ──
-export const LeedsBlue = {
-  dark: "#00323d",
-  base: "#003a52",
-  bright: "#1a84c7",
-} as const;
-
 // ── Blacks ──
 export const LeedsBlack = {
   dark: "#0a0202",
@@ -49,23 +29,6 @@ export const LeedsGrey = {
   base: "#ddd9d5",
   light: "#eae8e6",
   faded: "#f3f2f1",
-} as const;
-
-// ── Warm Greys ──
-export const LeedsWarmGrey = {
-  dark: "#5f5754",
-  medium: "#81746e",
-  base: "#b7aaa4",
-  light: "#cac2ba",
-  faded: "#efeae6",
-} as const;
-
-// ── Creams ──
-export const LeedsCream = {
-  dark: "#ddcfc0",
-  medium: "#e9e1d8",
-  base: "#f6eee5",
-  light: "#faf6f1",
 } as const;
 
 // ── Whites ──
