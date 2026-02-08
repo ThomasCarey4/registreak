@@ -68,9 +68,14 @@ export default function RegisterScreen() {
         editable={!isLoading}
       />
 
-      <View style={styles.row}>
-        <ThemedText>Staff account</ThemedText>
-        <Switch value={isStaff} onValueChange={setIsStaff} />
+      <View style={styles.staffSection}>
+        <View style={styles.staffLabelContainer}>
+          <ThemedText type="subtitle">Create as Instructor</ThemedText>
+          <ThemedText style={styles.staffDescription}>
+            Instructors can view and manage attendance codes
+          </ThemedText>
+        </View>
+        <Switch value={isStaff} onValueChange={setIsStaff} disabled={isLoading} />
       </View>
 
       <Button 
@@ -93,6 +98,25 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     padding: 8,
     borderRadius: 6,
+  },
+  staffSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginVertical: 8,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+  },
+  staffLabelContainer: {
+    flex: 1,
+    marginRight: 16,
+  },
+  staffDescription: {
+    marginTop: 4,
+    fontSize: 12,
+    opacity: 0.6,
   },
   row: {
     flexDirection: 'row',

@@ -57,10 +57,16 @@ def get_code():
     """
     Send code to front end via websockets every 30 seconds
     Returns a verification code for attendance checking
-    Requires authentication.
+    Requires authentication as a lecturer (is_staff=True).
     """
     try:
         lecturer_id = get_student_id()
+        user = request.user
+        
+        # Verify user is a lecturer
+        if not user.get('is_staff', False):
+            return jsonify({"error": "Only lecturers can access this endpoint"}), 403
+        
         return get_lecturer_current_lectures(lecturer_id)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
