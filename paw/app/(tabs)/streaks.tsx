@@ -234,7 +234,7 @@ export default function StreaksScreen() {
             <View
               className="rounded-2xl mb-4 overflow-hidden shadow-sm"
               style={{
-                backgroundColor: isDark ? "#1C1C1E" : "#fff",
+                backgroundColor: isDark ? "#1C1C1E" : "#F9FAFB",
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: isDark ? 0 : 0.08,
@@ -371,7 +371,7 @@ export default function StreaksScreen() {
           </Animated.View>
 
           {/* Calendar Card */}
-          <View className={`rounded-2xl p-4 mb-4 shadow-sm ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-black/10"}`}>
+          <View className={`rounded-2xl p-4 mb-4 ${isDark ? "bg-[#1C1C1E]" : "bg-[#F9FAFB]"}`}>
             {/* Month Navigation */}
             <View className="flex-row justify-between items-center mb-4">
               <TouchableOpacity onPress={goToPrevMonth} className="w-9 h-9 justify-center items-center">
@@ -498,7 +498,7 @@ export default function StreaksScreen() {
               selectedDayData.map((lecture, index) => (
                 <View
                   key={`${lecture.id}-${index}`}
-                  className={`rounded-xl p-4 flex-row items-center border-l-4 shadow-sm ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-black/5"}`}
+                  className={`rounded-xl p-4 flex-row items-center border-l-4 shadow-sm ${isDark ? "bg-[#1C1C1E]" : "bg-[#F9FAFB] shadow-black/5"}`}
                   style={{
                     borderLeftColor: lecture.attended ? "#4CAF50" : "#F44336",
                   }}
@@ -533,7 +533,7 @@ export default function StreaksScreen() {
                 </View>
               ))
             ) : (
-              <View className={`rounded-xl p-8 items-center ${isDark ? "bg-[#1C1C1E]" : "bg-white"}`}>
+              <View className={`rounded-xl p-8 items-center ${isDark ? "bg-[#1C1C1E]" : "bg-[#F9FAFB]"}`}>
                 <Text className={`text-[15px] ${isDark ? "text-[#ECEDEE]/40" : "text-[#374151]/40"}`}>
                   No lectures scheduled
                 </Text>

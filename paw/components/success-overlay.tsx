@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { Dimensions, Modal, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -18,9 +17,10 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 interface SuccessOverlayProps {
   visible: boolean;
   onComplete: () => void;
+  onFadeStart?: () => void;
 }
 
-export function SuccessOverlay({ visible, onComplete }: SuccessOverlayProps) {
+export function SuccessOverlay({ visible, onComplete, onFadeStart }: SuccessOverlayProps) {
   const circleScale = useSharedValue(0);
   const iconScale = useSharedValue(0);
   const ring1Scale = useSharedValue(1);
@@ -96,15 +96,13 @@ export function SuccessOverlay({ visible, onComplete }: SuccessOverlayProps) {
 
       // Auto dismiss — fade everything out together
       const timer = setTimeout(() => {
-        textOpacity.value = withTiming(0, { duration: 450, easing: Easing.in(Easing.cubic) });
-        circleScale.value = withTiming(0.8, { duration: 450, easing: Easing.in(Easing.cubic) });
-        iconScale.value = withTiming(0.8, { duration: 450, easing: Easing.in(Easing.cubic) });
-        overlayOpacity.value = withTiming(0, { duration: 450, easing: Easing.in(Easing.cubic) }, (finished) => {
-          if (finished) {
-            runOnJS(onComplete)();
-          }
-        });
-      }, 3000);
+        onFadeStart?.();
+        textOpacity.value = withTiming(0, { duration: 200, easing: Easing.in(Easing.cubic) });
+        circleScale.value = withTiming(0.8, { duration: 200, easing: Easing.in(Easing.cubic) });
+        iconScale.value = withTiming(0.8, { duration: 200, easing: Easing.in(Easing.cubic) });
+        overlayOpacity.value = withTiming(0, { duration: 200, easing: Easing.in(Easing.cubic) });
+        setTimeout(onComplete, 220);
+      }, 2000);
 
       return () => {
         clearTimeout(timer);
