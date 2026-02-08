@@ -31,9 +31,7 @@ export default function AccountScreen() {
             marginBottom: 32,
           }}
         >
-          <Text style={{ fontSize: 13, color: isDark ? "#8e8e93" : "#6e6e73", marginBottom: 4 }}>
-            Username
-          </Text>
+          <Text style={{ fontSize: 13, color: isDark ? "#8e8e93" : "#6e6e73", marginBottom: 4 }}>Username</Text>
           <Text style={{ fontSize: 20, fontWeight: "600", color: isDark ? "#fff" : "#000" }}>
             {user?.username ?? "—"}
           </Text>
