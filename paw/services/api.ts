@@ -99,6 +99,7 @@ class APIService {
         lecture_id: number;
         module_id: number;
         module_name: string;
+        module_code: string;
         start_time: string;
         end_time: string;
         code: string;

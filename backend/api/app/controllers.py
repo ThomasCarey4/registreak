@@ -220,6 +220,7 @@ def get_student_attendance(student_id: str):
             Lecture.end_time,
             Module.name,
             Module.course_code,
+            Module.module_code,
             LectureAttendance.is_attended,
         )
         .select_from(LectureAttendance)

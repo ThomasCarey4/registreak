@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { ScrollView, View, RefreshControl, ActivityIndicator, Pressable, Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/auth-context";
 import { apiService } from "@/services/api";
 import { themeColors } from "@/constants/colors";
@@ -7,9 +8,12 @@ import { useColorScheme } from "nativewind";
 import { Redirect } from "expo-router";
 import QRCode from "react-native-qrcode-svg";
 
+const REFRESH_INTERVAL = 30;
+
 interface Lecture {
   lecture_id: number;
   module_id: number;
+  module_code: string;
   module_name: string;
   start_time: string;
   end_time: string;
@@ -24,6 +28,12 @@ export default function LecturesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [sessionEnded, setSessionEnded] = useState(false);
+  const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const resetCountdown = useCallback(() => {
+    setCountdown(REFRESH_INTERVAL);
+  }, []);
 
   const fetchLectures = useCallback(async () => {
     try {
@@ -42,21 +52,33 @@ export default function LecturesScreen() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      resetCountdown();
     }
-  }, []);
+  }, [resetCountdown]);
 
-  // Initial fetch and setup auto-refresh
+  // Countdown timer — ticks every second
   useEffect(() => {
     if (!user?.is_staff || sessionEnded) return;
 
+    countdownRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          fetchLectures();
+          return REFRESH_INTERVAL;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, [user?.is_staff, sessionEnded, fetchLectures]);
+
+  // Initial fetch
+  useEffect(() => {
+    if (!user?.is_staff || sessionEnded) return;
     fetchLectures();
-
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(() => {
-      fetchLectures();
-    }, 30000);
-
-    return () => clearInterval(interval);
   }, [user?.is_staff, sessionEnded, fetchLectures]);
 
   const onRefresh = useCallback(() => {
@@ -92,20 +114,16 @@ export default function LecturesScreen() {
   }
 
   const colors = themeColors[colorScheme ?? "light"];
+  const progressRatio = countdown / REFRESH_INTERVAL;
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background">
       <ScrollView
-        contentContainerStyle={{ padding: 16, flexGrow: 1 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 32, paddingBottom: 40, flexGrow: 1 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <View className="mb-6 items-center">
-          <Text className="text-foreground text-3xl font-bold">Active Lectures</Text>
-          <Text className="text-foreground/70 mt-2 text-sm">Share these codes with your students</Text>
-        </View>
-
         {error && (
-          <View className="mb-4 rounded-lg border border-error/30 bg-error/5 p-3">
+          <View className="mb-4 rounded-xl bg-error/10 p-3">
             <Text className="text-error text-sm">{error}</Text>
           </View>
         )}
@@ -113,7 +131,7 @@ export default function LecturesScreen() {
         {loading && (
           <View className="flex-1 items-center justify-center py-10">
             <ActivityIndicator size="large" color={colors.tint} />
-            <Text className="text-foreground mt-3 text-sm">Loading lectures...</Text>
+            <Text className="text-foreground/60 mt-3 text-sm">Loading lectures…</Text>
           </View>
         )}
 
@@ -125,63 +143,53 @@ export default function LecturesScreen() {
         )}
 
         {lectures.map((lecture) => (
-          <View key={lecture.lecture_id} className="mb-5 overflow-hidden rounded-xl border border-divider">
-            <View className="bg-foreground/5 p-4">
-              <View className="gap-1">
-                <Text className="text-foreground text-lg font-semibold">{lecture.module_name}</Text>
-                <Text className="text-foreground/60 text-xs">
-                  {formatTime(lecture.start_time)} – {formatTime(lecture.end_time)}
-                </Text>
-              </View>
+          <View key={lecture.lecture_id} className="mb-6 overflow-hidden rounded-2xl border border-divider">
+            <View className="bg-foreground/5 px-5 py-4">
+              <Text className="text-foreground text-[20px] font-bold">
+                {lecture.module_code} - {lecture.module_name}
+              </Text>
+              <Text className="text-foreground/50 mt-1 text-[13px]">
+                {formatTime(lecture.start_time)} – {formatTime(lecture.end_time)}
+              </Text>
             </View>
 
-            <View className="items-center p-6">
-              <Text className="text-foreground/60 mb-4 text-xs uppercase tracking-wider">Verification Code</Text>
-              <View className="mb-4 flex-row justify-center gap-3">
+            <View className="mt-6 items-center">
+              <View className="rounded-2xl bg-white p-4">
+                <QRCode value={`paw://attend?code=${lecture.code}`} size={180} />
+              </View>
+            </View>
+            <View className="items-center px-5 pb-6 pt-8">
+              <View className="mb-6 flex-row justify-center gap-3">
                 {lecture.code.split("").map((digit, idx) => (
                   <View
                     key={idx}
-                    className="h-[72px] w-[56px] items-center justify-center rounded-lg border-2 border-success bg-success/10"
+                    className="h-[88px] w-[68px] items-center justify-center rounded-2xl bg-foreground/[0.06]"
                   >
-                    <Text
-                      className="text-foreground text-[32px] font-bold"
-                      style={{ fontFamily: "Courier New", letterSpacing: 2 }}
-                    >
-                      {digit}
-                    </Text>
+                    <Text className="text-foreground text-[42px] font-bold">{digit}</Text>
                   </View>
                 ))}
               </View>
 
-              <View className="mt-4 items-center">
-                <View className="rounded-xl bg-white p-3">
-                  <QRCode
-                    value={`paw://attend?code=${lecture.code}`}
-                    size={180}
-                    backgroundColor="white"
-                    logo={require("@/assets/images/icon.png")}
-                    logoSize={40}
-                    logoBackgroundColor="white"
-                    logoBorderRadius={8}
-                  />
+              {/* Countdown bar */}
+              <View className="w-full max-w-[300px] mb-1">
+                <View className="h-[3px] w-full rounded-full bg-foreground/10 overflow-hidden">
+                  <View className="h-full rounded-full bg-foreground/30" style={{ width: `${progressRatio * 100}%` }} />
                 </View>
-                <Text className="text-foreground/50 mt-2 text-xs">Scan this QR code to mark attendance</Text>
-              </View>
-
-              <View className="mt-4 flex-row items-center gap-2">
-                <View className="h-1.5 w-1.5 rounded-full bg-success" />
-                <Text className="text-foreground/60 text-xs">Auto-refreshing every 30 secondst </Text>
+                <Text className="text-foreground/40 mt-2 text-center text-[11px]">New code in {countdown}s</Text>
               </View>
             </View>
           </View>
         ))}
 
         {lectures.length > 0 && (
-          <Pressable className="mb-5 mt-2 items-center rounded-lg bg-error px-6 py-3.5" onPress={handleEndSession}>
-            <Text className="text-base font-semibold text-white">End Session</Text>
+          <Pressable
+            className="mt-2 items-center rounded-xl py-4 active:opacity-80 bg-foreground"
+            onPress={handleEndSession}
+          >
+            <Text className="text-background text-[17px] font-semibold">End Session</Text>
           </Pressable>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
