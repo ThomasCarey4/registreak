@@ -5,7 +5,14 @@ CREATE TABLE IF NOT EXISTS users (
     student_id TEXT PRIMARY KEY,
     username TEXT NOT NULL,
     password TEXT NOT NULL,
-    "isStaff" BOOLEAN DEFAULT FALSE NOT NULL
+    "isStaff" BOOLEAN DEFAULT FALSE NOT NULL,
+    current_streak INTEGER DEFAULT 0 NOT NULL,
+<<<<<<< HEAD
+    longest_streak INTEGER DEFAULT 0 NOT NULL,
+    streak_last_date DATE
+=======
+    longest_streak INTEGER DEFAULT 0 NOT NULL
+>>>>>>> 62f716cb84c6cf81a795a5075598aa15bd72927c
 );
 
 -- Courses table
@@ -43,3 +50,7 @@ CREATE INDEX IF NOT EXISTS fki_fk_course ON modules(course_code);
 CREATE INDEX IF NOT EXISTS fki_fk_lecture ON lecture_attendance(lecture_id);
 CREATE INDEX IF NOT EXISTS fki_fk_user ON lecture_attendance(user_id);
 CREATE INDEX IF NOT EXISTS idx_lecturer_lectures ON lectures(lecturer_id);
+
+-- Index for efficient "find previous lecture by time" queries (streak calculation)
+CREATE INDEX IF NOT EXISTS idx_lecture_start_desc ON lectures(start_time DESC, id);
+

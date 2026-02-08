@@ -71,27 +71,29 @@ def get_code():
 def verify_attendance():
     """
     Verify code given in body and save attendance to database
-    Expected JSON: { "code": str, "student_id": str, "lecture_id": int }
+    Expected JSON: { "code": str }
     Requires authentication.
     """
     try:
-        data = verify_student_attendance(request.get_json())
-        # TODO: Validate code matches current code, retrieve lecture, save attendance
-        # Verify code
-        # Find lecture_attendance record
-        # Mark as attended
-        pass
+        user = request.user
+        student_id = user.get('student_id')
+        data = request.get_json()
+        
+        # Add student_id from auth context to request data
+        if data:
+            data['student_id'] = student_id
+        
+        response, status_code = verify_student_attendance(data)
+        return response, status_code
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-    
-    return jsonify({"message": "Attendance verified successfully"}), 200
 
 
 @main.route('/user/<student_id>', methods=['GET'])
 @token_required
 def get_user_details(student_id):
     """
-    Return student information by student_id
+    Return student information by student_id including streak data
     Requires authentication.
     """
     try:
@@ -102,7 +104,36 @@ def get_user_details(student_id):
         return jsonify({
             "student_id": user.student_id,
             "username": user.username,
-            "is_staff": user.is_staff
+            "is_staff": user.is_staff,
+<<<<<<< HEAD
+            "current_streak": user.current_streak or 0,
+            "longest_streak": user.longest_streak or 0
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@main.route('/user/<student_id>/streak', methods=['GET'])
+@token_required
+def get_user_streak(student_id):
+    """
+    Return student's streak information
+    Requires authentication.
+    """
+    try:
+        user = Users.query.filter_by(student_id=student_id).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        return jsonify({
+            "student_id": user.student_id,
+            "current_streak": user.current_streak or 0,
+            "longest_streak": user.longest_streak or 0,
+            "streak_last_date": user.streak_last_date.isoformat() if user.streak_last_date else None
+=======
+            "current_streak": user.current_streak,
+            "longest_streak": user.longest_streak
+>>>>>>> 62f716cb84c6cf81a795a5075598aa15bd72927c
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

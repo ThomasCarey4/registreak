@@ -4,6 +4,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Keyboard, Pressable, Text, TextInput, View } from "react-native";
+import { apiService } from "@/services/api";
 
 export default function AttendScreen() {
   const [cells, setCells] = useState<(string | null)[]>([null, null, null, null]);
@@ -62,19 +63,27 @@ export default function AttendScreen() {
   const firstEmpty = cells.findIndex((c) => c === null);
   const activeIndex = editIndex ?? (firstEmpty === -1 ? 4 : firstEmpty);
 
-  const submitCode = (finalCode: string) => {
+  const submitCode = async (finalCode: string) => {
     setEditIndex(null);
-    const correct = finalCode === "1234";
-    setIsError(!correct);
-    setSubmitted(true);
-    if (correct) {
+    
+    try {
+      // Call the API to verify attendance
+      await apiService.verifyAttendance(finalCode);
+      
+      // Success - show success overlay
+      setIsError(false);
+      setSubmitted(true);
       Keyboard.dismiss();
       setShowSuccess(true);
+      
       setTimeout(() => {
         setCells([null, null, null, null]);
         setSubmitted(false);
       }, 400);
-    } else {
+    } catch (error) {
+      // Failed - show error toast
+      setIsError(true);
+      setSubmitted(true);
       setShowToast(true);
     }
   };
