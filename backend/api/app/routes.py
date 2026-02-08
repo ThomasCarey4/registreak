@@ -1,6 +1,12 @@
 from flask import Blueprint, jsonify, request, current_app
 from .models import Users, Course, Module, Lecture, LectureAttendance
-from .controllers import get_lecturer_active_lectures, verify_student_attendance
+from .controllers import (
+    get_lecturer_active_lectures,
+    verify_student_attendance,
+    get_student_attendance,
+    get_course_leaderboard,
+    get_student_courses,
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from datetime import datetime, timedelta
@@ -72,6 +78,50 @@ def get_user_details(student_id):
             "current_streak": user.current_streak,
             "longest_streak": user.longest_streak
         }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@main.route('/attendance', methods=['GET'])
+@token_required
+def attendance():
+    """
+    Get all lecture attendance for the authenticated student, grouped by date.
+    Returns the shape expected by the streaks/calendar view.
+    Requires authentication.
+    """
+    try:
+        student_id = get_student_id()
+        return get_student_attendance(student_id)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@main.route('/leaderboard/<course_code>', methods=['GET'])
+@token_required
+def leaderboard(course_code):
+    """
+    Get leaderboard for a specific course — students ranked by streak.
+    Returns the shape expected by the leaderboard view.
+    Requires authentication.
+    """
+    try:
+        student_id = get_student_id()
+        return get_course_leaderboard(course_code, student_id)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@main.route('/courses', methods=['GET'])
+@token_required
+def courses():
+    """
+    Get courses the authenticated student is enrolled in.
+    Requires authentication.
+    """
+    try:
+        student_id = get_student_id()
+        return get_student_courses(student_id)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

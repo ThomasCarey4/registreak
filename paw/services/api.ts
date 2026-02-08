@@ -102,6 +102,27 @@ class APIService {
       body: JSON.stringify({ code }),
     });
   }
+
+  async getAttendance() {
+    return this.request<{ attendance: Record<string, { lectures: any[] }> }>("/attendance");
+  }
+
+  // Leaderboard endpoints
+  async getLeaderboard(courseCode: string) {
+    return this.request<{
+      courseCode: string;
+      courseName: string;
+      totalLectures: number;
+      currentUserId: string;
+      showTop: number;
+      students: { id: string; name: string; attended: number; streak: number }[];
+    }>(`/leaderboard/${courseCode}`);
+  }
+
+  // Course endpoints
+  async getCourses() {
+    return this.request<{ courses: { code: string; name: string }[] }>("/courses");
+  }
 }
 
 export const apiService = new APIService();

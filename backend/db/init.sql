@@ -49,3 +49,6 @@ CREATE INDEX IF NOT EXISTS idx_lecturer_lectures ON lectures(lecturer_id);
 -- Index for efficient "find previous lecture by time" queries (streak calculation)
 CREATE INDEX IF NOT EXISTS idx_lecture_start_desc ON lectures(start_time DESC, id);
 
+-- Index for efficient module → lectures joins (leaderboard, attendance queries)
+CREATE INDEX IF NOT EXISTS idx_lectures_module_id ON lectures(module_id);
+

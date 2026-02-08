@@ -1,9 +1,11 @@
 import { BottomFade, useBottomFade } from "@/components/bottom-fade";
 import { Colors, LeedsRed } from "@/constants/theme";
-import rawData from "@/data/leaderboard-data.json";
+import { useAuth } from "@/context/auth-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import React, { useMemo } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { apiService } from "@/services/api";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useMemo, useState } from "react";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Student {
@@ -13,6 +15,15 @@ interface Student {
   streak: number;
 }
 
+interface LeaderboardData {
+  courseCode: string;
+  courseName: string;
+  totalLectures: number;
+  currentUserId: string;
+  showTop: number;
+  students: Student[];
+}
+
 interface DisplayItem {
   type: "student";
   rank?: number;
@@ -20,11 +31,8 @@ interface DisplayItem {
   isCurrentUser?: boolean;
 }
 
-const { students, totalLectures, currentUserId, showTop, courseName } = rawData as typeof rawData & {
-  students: Student[];
-};
-
-function buildLeaderboardDisplay(): DisplayItem[] {
+function buildLeaderboardDisplay(data: LeaderboardData): DisplayItem[] {
+  const { students, currentUserId, showTop } = data;
   const sorted = [...students].sort((a, b) => b.streak - a.streak);
   const currentUserIndex = sorted.findIndex((s) => s.id === currentUserId);
   const items: DisplayItem[] = [];
@@ -43,12 +51,14 @@ function buildLeaderboardDisplay(): DisplayItem[] {
   if (currentUserIndex < showTop) return items;
 
   // Otherwise add just the current user at their actual rank
-  items.push({
-    type: "student",
-    rank: currentUserIndex + 1,
-    student: sorted[currentUserIndex],
-    isCurrentUser: true,
-  });
+  if (currentUserIndex >= 0) {
+    items.push({
+      type: "student",
+      rank: currentUserIndex + 1,
+      student: sorted[currentUserIndex],
+      isCurrentUser: true,
+    });
+  }
 
   return items;
 }
@@ -118,17 +128,66 @@ export default function LeaderboardScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const isDark = colorScheme === "dark";
   const colors = Colors[colorScheme];
+  const { user } = useAuth();
 
-  const displayItems = useMemo(() => buildLeaderboardDisplay(), []);
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
+  const [courses, setCourses] = useState<{ code: string; name: string }[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch courses on mount, then leaderboard for first/selected course
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      (async () => {
+        try {
+          setLoading(true);
+          const coursesRes = await apiService.getCourses();
+          if (cancelled) return;
+          const courseList = coursesRes.courses;
+          setCourses(courseList);
+
+          const courseCode = selectedCourse ?? courseList[0]?.code;
+          if (!courseCode) {
+            setLoading(false);
+            return;
+          }
+          if (!selectedCourse) setSelectedCourse(courseCode);
+
+          const lb = await apiService.getLeaderboard(courseCode);
+          if (cancelled) return;
+          setLeaderboardData(lb);
+        } catch (e) {
+          console.error("Failed to fetch leaderboard:", e);
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      })();
+      return () => { cancelled = true; };
+    }, [selectedCourse])
+  );
+
+  const handleCourseChange = (code: string) => {
+    if (code !== selectedCourse) {
+      setSelectedCourse(code);
+      setLeaderboardData(null);
+    }
+  };
+
+  const showTop = leaderboardData?.showTop ?? 10;
+  const displayItems = useMemo(
+    () => (leaderboardData ? buildLeaderboardDisplay(leaderboardData) : []),
+    [leaderboardData],
+  );
 
   // Split: top 10 list vs current user if outside top 10
   const topItems = useMemo(
     () => displayItems.filter((i) => !i.isCurrentUser || (i.rank ?? 0) <= showTop),
-    [displayItems],
+    [displayItems, showTop],
   );
   const currentUserItem = useMemo(
     () => displayItems.find((i) => i.isCurrentUser && (i.rank ?? 0) > showTop),
-    [displayItems],
+    [displayItems, showTop],
   );
 
   const { opacity: fadeOpacity, onScroll: onFadeScroll } = useBottomFade();
@@ -145,13 +204,55 @@ export default function LeaderboardScreen() {
           {/* Header */}
           <View className="px-5 pt-5 pb-2">
             <Text style={{ fontSize: 32, fontWeight: "bold", marginBottom: 4, color: colors.text }}>Leaderboard</Text>
-            <Text style={{ fontSize: 15, color: colors.subtleText }}>
-              {courseName} · {totalLectures} lectures
-            </Text>
+            {leaderboardData ? (
+              <Text style={{ fontSize: 15, color: colors.subtleText }}>
+                {leaderboardData.courseName} · {leaderboardData.totalLectures} lectures
+              </Text>
+            ) : (
+              !loading && (
+                <Text style={{ fontSize: 15, color: colors.subtleText }}>No course data available</Text>
+              )
+            )}
           </View>
 
+          {/* Course selector (if multiple courses) */}
+          {courses.length > 1 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4 pb-2">
+              {courses.map((c) => (
+                <TouchableOpacity
+                  key={c.code}
+                  onPress={() => handleCourseChange(c.code)}
+                  className="mr-2 px-4 py-2 rounded-full"
+                  style={{
+                    backgroundColor: c.code === selectedCourse
+                      ? colors.tint
+                      : isDark ? "#1C1C1E" : "#F3F4F6",
+                  }}
+                >
+                  <Text
+                    className="text-sm font-semibold"
+                    style={{
+                      color: c.code === selectedCourse
+                        ? (isDark ? colors.background : "#fff")
+                        : colors.text,
+                    }}
+                  >
+                    {c.code}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+
+          {loading && (
+            <View className="py-20 items-center">
+              <ActivityIndicator size="large" color={colors.tint} />
+            </View>
+          )}
+
           {/* Top 10 List */}
-          <View className="px-4 pt-3 gap-2">
+          {!loading && (
+            <View className="px-4 pt-3 gap-2">
             {topItems.map((item) => {
               const { rank, student, isCurrentUser } = item;
               if (!student || !rank) return null;
@@ -211,9 +312,10 @@ export default function LeaderboardScreen() {
               );
             })}
           </View>
+          )}
 
           {/* Current user position (when outside top 10) */}
-          {currentUserItem && currentUserItem.student && (
+          {!loading && currentUserItem && currentUserItem.student && (
             <View className="px-4 pt-4 pb-10">
               {/* Divider with "Your Position" label */}
               <View className="flex-row items-center gap-3 mb-3 px-1">
@@ -269,7 +371,7 @@ export default function LeaderboardScreen() {
           )}
 
           {/* Bottom padding when user is in top 10 */}
-          {!currentUserItem && <View className="h-10" />}
+          {!loading && !currentUserItem && <View className="h-10" />}
         </ScrollView>
         <BottomFade opacity={fadeOpacity} />
       </SafeAreaView>

@@ -6,6 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
+import { Redirect } from 'expo-router';
 
 interface Lecture {
   lecture_id: number;
@@ -95,12 +96,7 @@ export default function LecturesScreen() {
   };
 
   if (!user?.is_staff) {
-    return (
-      <ThemedView style={styles.container}>
-        <ThemedText type="title">Access Denied</ThemedText>
-        <ThemedText>This section is only available to instructors.</ThemedText>
-      </ThemedView>
-    );
+    return <Redirect href="/" />;
   }
 
   return (

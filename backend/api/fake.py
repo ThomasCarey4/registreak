@@ -124,13 +124,13 @@ with app.app_context():
         if assigned_lecturer == '69':
           lecturer_69_lectures.append(lecture.id)
 
-  # Add back-to-back lectures for lecturer 69 for next month
+  # Add back-to-back lectures for lecturer 69 (past 14 days + next 7 days)
   print("Adding back-to-back lectures for lecturer 69...")
-  base_start = datetime.now(timezone.utc)
+  base_start = datetime.now(timezone.utc) - timedelta(days=14)
   first_module_id = Module.query.first().id
   
-  # Create 30+ consecutive days of lectures every hour, 24/7 (back-to-back schedule)
-  for day in range(35):  # 35 days to ensure at least a month
+  # Create 21 days of hourly lectures: 14 days in the past + 7 days into the future
+  for day in range(21):
     # Lectures every hour, 24 hours a day (0-23)
     for hour in range(24):
       lecture_start = base_start + timedelta(days=day, hours=hour)
@@ -247,12 +247,13 @@ with app.app_context():
   for student_data in all_students:
     sid = student_data['student_id']
 
-    # Enrolled past lectures for this student, ordered by start_time
+    # Enrolled fully-finished lectures for this student, ordered by start_time
+    # (excludes currently-active lectures so nobody is pre-marked as attended)
     past_attendances = (
       LectureAttendance.query
       .join(Lecture)
       .filter(LectureAttendance.user_id == sid)
-      .filter(Lecture.start_time < now)
+      .filter(Lecture.end_time < now)
       .order_by(Lecture.start_time.asc())
       .all()
     )
