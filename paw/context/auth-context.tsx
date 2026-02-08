@@ -36,6 +36,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const savedToken = await apiService.getToken();
       if (savedToken) {
         setToken(savedToken);
+        // Decode the JWT payload to restore the user object
+        try {
+          const base64Url = savedToken.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const payload = JSON.parse(atob(base64));
+          setUser({
+            student_id: payload.student_id,
+            username: payload.username,
+            is_staff: payload.is_staff,
+          });
+        } catch {
+          // Token malformed – clear it
+          await apiService.clearToken();
+          setToken(null);
+        }
       }
     } catch (e) {
       // Restoring token failed

@@ -5,6 +5,7 @@ import { useAuth } from "@/context/auth-context";
 import rawData from "@/data/attendance-data.json";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiService } from "@/services/api";
+import { useFocusEffect } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Animated, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -167,23 +168,24 @@ export default function StreaksScreen() {
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
 
-  const fetchStreak = useCallback(async () => {
-    if (!user?.student_id) return;
-    try {
-      const data = await apiService.getUserDetails(user.student_id) as {
-        current_streak: number;
-        longest_streak: number;
-      };
-      setStreak(data.current_streak);
-      setBestStreak(data.longest_streak);
-    } catch (e) {
-      console.error("Failed to fetch streak data:", e);
-    }
-  }, [user?.student_id]);
-
-  useEffect(() => {
-    fetchStreak();
-  }, [fetchStreak]);
+  // Re-fetch streak data every time this tab is focused
+  useFocusEffect(
+    useCallback(() => {
+      if (!user?.student_id) return;
+      (async () => {
+        try {
+          const data = await apiService.getUserDetails(user.student_id) as {
+            current_streak: number;
+            longest_streak: number;
+          };
+          setStreak(data.current_streak);
+          setBestStreak(data.longest_streak);
+        } catch (e) {
+          console.error("Failed to fetch streak data:", e);
+        }
+      })();
+    }, [user?.student_id])
+  );
 
   const overallRate = useMemo(() => calculateOverallRate(attendanceData), []);
   const perfectDays = useMemo(() => calculatePerfectDays(attendanceData), []);
