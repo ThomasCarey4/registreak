@@ -134,7 +134,7 @@ export default function LeaderboardScreen() {
   const { opacity: fadeOpacity, onScroll: onFadeScroll } = useBottomFade();
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.surfaceBg }}>
+    <View className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
       <SafeAreaView className="flex-1" edges={["top"]}>
         <ScrollView
           className="flex-1"
@@ -163,7 +163,7 @@ export default function LeaderboardScreen() {
                   key={student.id}
                   className="flex-row items-center rounded-2xl p-3.5"
                   style={{
-                    backgroundColor: isCurrentUser ? colors.cardHighlight : colors.card,
+                    backgroundColor: colors.card,
                     borderWidth: isCurrentUser ? 1.5 : 0,
                     borderColor: isCurrentUser ? colors.tint : "transparent",
                     shadowColor: "#000",
@@ -230,7 +230,7 @@ export default function LeaderboardScreen() {
               <View
                 className="flex-row items-center rounded-2xl p-4"
                 style={{
-                  backgroundColor: colors.cardHighlight,
+                  backgroundColor: colors.background,
                   borderWidth: 1.5,
                   borderColor: colors.tint,
                   shadowColor: colors.tint,

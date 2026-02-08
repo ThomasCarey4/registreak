@@ -4,3 +4,86 @@
 .envrc
 .direnv/
 android/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Poetry
+poetry.lock
+dist/
+
+# Flask
+instance/
+.webassets-cache
+*.db
+*.sqlite
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node/React Native
+node_modules/
+npm-debug.log
+yarn-error.log
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+.expo/
+.expo-shared/
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Docker
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp

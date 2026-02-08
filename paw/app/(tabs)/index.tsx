@@ -1,21 +1,25 @@
 import { SuccessOverlay } from "@/components/success-overlay";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Keyboard, Pressable, Text, TextInput, View } from "react-native";
+import { apiService } from "@/services/api";
 
 export default function AttendScreen() {
-  const [code, setCode] = useState("");
+  const [cells, setCells] = useState<(string | null)[]>([null, null, null, null]);
   const [submitted, setSubmitted] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [isError, setIsError] = useState(false);
-  const toastAnim = useRef(new Animated.Value(120)).current;
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const toastAnim = useRef(new Animated.Value(-120)).current;
   const toastProgress = useRef(new Animated.Value(1)).current;
   const inputRef = useRef<TextInput>(null);
   const colorScheme = useColorScheme() ?? "light";
   const tintColor = Colors[colorScheme].tint;
   const isDark = colorScheme === "dark";
+  const router = useRouter();
 
   // Auto-open keyboard only on initial app launch
   useEffect(() => {
@@ -44,12 +48,11 @@ export default function AttendScreen() {
 
       const timer = setTimeout(() => {
         Animated.timing(toastAnim, {
-          toValue: 120,
+          toValue: -120,
           duration: 250,
           useNativeDriver: true,
         }).start(() => {
           setShowToast(false);
-          handleReset();
         });
       }, 2200);
 
@@ -57,35 +60,99 @@ export default function AttendScreen() {
     }
   }, [showToast]);
 
-  const handleCodeChange = (text: string) => {
-    const digits = text.replace(/[^0-9]/g, "").slice(0, 4);
-    setCode(digits);
-    if (digits.length === 4) {
-      Keyboard.dismiss();
-      const correct = digits === "1234";
-      setIsError(!correct);
+  const firstEmpty = cells.findIndex((c) => c === null);
+  const activeIndex = editIndex ?? (firstEmpty === -1 ? 4 : firstEmpty);
+
+  const submitCode = async (finalCode: string) => {
+    setEditIndex(null);
+    
+    try {
+      // Call the API to verify attendance
+      await apiService.verifyAttendance(finalCode);
+      
+      // Success - show success overlay
+      setIsError(false);
       setSubmitted(true);
-      if (correct) {
-        setShowSuccess(true);
-        // Clear digits immediately so they're gone behind the overlay
-        setTimeout(() => {
-          setCode("");
-          setSubmitted(false);
-        }, 400);
+      Keyboard.dismiss();
+      setShowSuccess(true);
+      
+      setTimeout(() => {
+        setCells([null, null, null, null]);
+        setSubmitted(false);
+      }, 400);
+    } catch (error) {
+      // Failed - show error toast
+      setIsError(true);
+      setSubmitted(true);
+      setShowToast(true);
+    }
+  };
+
+  const handleCodeChange = (text: string) => {
+    // Clear error state once user starts typing
+    if (submitted && isError) {
+      setSubmitted(false);
+      setIsError(false);
+    }
+
+    if (text.length > 1) {
+      // Digit typed (text is sentinel "x" + new char)
+      const newDigit = text.slice(1).replace(/[^0-9]/g, "")[0];
+      if (!newDigit || activeIndex > 3) return;
+
+      const newCells = [...cells];
+      newCells[activeIndex] = newDigit;
+      setCells(newCells);
+
+      if (newCells.every((c) => c !== null)) {
+        submitCode(newCells.join(""));
+        return;
+      }
+
+      if (editIndex !== null) {
+        const next = editIndex + 1;
+        setEditIndex(next < 4 ? next : null);
+      }
+    } else if (text.length === 0) {
+      // Backspace
+      if (editIndex !== null) {
+        if (cells[editIndex] !== null) {
+          const newCells = [...cells];
+          newCells[editIndex] = null;
+          setCells(newCells);
+          // If no digits after this cell, go back instead of staying
+          const hasDigitsAfter = newCells.slice(editIndex + 1).some((c) => c !== null);
+          if (!hasDigitsAfter) {
+            // Move back to previous filled cell, or exit edit mode
+            let prev = editIndex - 1;
+            while (prev >= 0 && newCells[prev] === null) prev--;
+            setEditIndex(prev >= 0 ? prev : null);
+          }
+        }
       } else {
-        setShowToast(true);
+        // Normal mode: clear rightmost filled cell
+        for (let i = 3; i >= 0; i--) {
+          if (cells[i] !== null) {
+            const newCells = [...cells];
+            newCells[i] = null;
+            setCells(newCells);
+            break;
+          }
+        }
       }
     }
   };
 
-  const handleTapDigits = () => {
-    if (!submitted) {
-      inputRef.current?.focus();
+  const handleTapDigit = (i: number) => {
+    if (submitted) {
+      setSubmitted(false);
+      setIsError(false);
     }
+    setEditIndex(i);
+    inputRef.current?.focus();
   };
 
   const handleReset = () => {
-    setCode("");
     setSubmitted(false);
   };
 
@@ -93,18 +160,22 @@ export default function AttendScreen() {
     <Pressable onPress={Keyboard.dismiss} className={`flex-1 ${isDark ? "bg-[#151718]" : "bg-white"}`}>
       <SuccessOverlay
         visible={showSuccess}
+        onFadeStart={() => {
+          handleReset();
+          router.push("/(tabs)/streaks");
+        }}
         onComplete={() => {
           setShowSuccess(false);
-          handleReset();
         }}
       />
 
       {showToast && (
         <Animated.View
+          pointerEvents="none"
           style={{
             transform: [{ translateY: toastAnim }],
             position: "absolute",
-            bottom: 12,
+            top: 60,
             left: 16,
             right: 16,
             zIndex: 50,
@@ -115,17 +186,6 @@ export default function AttendScreen() {
             borderColor: isDark ? "#4A2D2D" : "#FFCDD2",
           }}
         >
-          <Animated.View
-            style={{
-              height: 3,
-              backgroundColor: isDark ? "#F44336" : "#EF5350",
-              opacity: 0.5,
-              width: toastProgress.interpolate({
-                inputRange: [0, 1],
-                outputRange: ["0%", "100%"],
-              }),
-            }}
-          />
           <View className="flex-row items-center px-4 py-3.5">
             <View
               className="w-9 h-9 rounded-xl justify-center items-center mr-3"
@@ -152,13 +212,21 @@ export default function AttendScreen() {
               </Text>
             </View>
           </View>
+          <Animated.View
+            style={{
+              height: 3,
+              backgroundColor: isDark ? "#F44336" : "#EF5350",
+              opacity: 0.5,
+              width: toastProgress.interpolate({
+                inputRange: [0, 1],
+                outputRange: ["0%", "100%"],
+              }),
+            }}
+          />
         </Animated.View>
       )}
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1 justify-center items-center px-6"
-      >
+      <View className="flex-1 justify-center items-center px-6">
         <View className="items-center mb-12">
           <Text className={`text-[32px] font-bold mb-2 text-center ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
             Mark Attendance
@@ -170,17 +238,18 @@ export default function AttendScreen() {
           </Text>
         </View>
 
-        <Pressable onPress={handleTapDigits} className="flex-row gap-3">
+        <View className="flex-row gap-3">
           {[0, 1, 2, 3].map((i) => (
-            <View
+            <Pressable
               key={i}
+              onPress={() => handleTapDigit(i)}
               className="w-[68px] h-[84px] rounded-2xl border-2 justify-center items-center"
               style={{
                 borderColor: submitted
                   ? isError
                     ? "#F44336"
                     : "#4CAF50"
-                  : code.length === i
+                  : activeIndex === i
                     ? tintColor
                     : isDark
                       ? "#333"
@@ -202,22 +271,22 @@ export default function AttendScreen() {
                 className={`text-4xl font-bold ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}
                 style={submitted ? { color: isError ? "#F44336" : "#4CAF50" } : undefined}
               >
-                {code[i] || ""}
+                {cells[i] || ""}
               </Text>
-            </View>
+            </Pressable>
           ))}
-        </Pressable>
+        </View>
 
         <TextInput
           ref={inputRef}
-          value={code}
+          value="x"
           onChangeText={handleCodeChange}
           keyboardType="number-pad"
-          maxLength={4}
+          maxLength={2}
           className="absolute opacity-0 h-0 w-0"
           caretHidden
         />
-      </KeyboardAvoidingView>
+      </View>
     </Pressable>
   );
 }

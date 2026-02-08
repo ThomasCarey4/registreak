@@ -242,7 +242,7 @@ export default function StreaksScreen() {
             <View
               className="rounded-2xl mb-4 overflow-hidden shadow-sm"
               style={{
-                backgroundColor: isDark ? "#1C1C1E" : "#fff",
+                backgroundColor: isDark ? "#1C1C1E" : "#F9FAFB",
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: isDark ? 0 : 0.08,
@@ -379,13 +379,7 @@ export default function StreaksScreen() {
           </Animated.View>
 
           {/* Calendar Card */}
-          <View className={`rounded-2xl p-4 mb-4 shadow-sm ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-black/10"}`} style={{
-                backgroundColor: isDark ? "#1C1C1E" : "#fff",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: isDark ? 0 : 0.08,
-                shadowRadius: 12,
-              }}>
+          <View className={`rounded-2xl p-4 mb-4 ${isDark ? "bg-[#1C1C1E]" : "bg-[#F9FAFB]"}`}>
             {/* Month Navigation */}
             <View className="flex-row justify-between items-center mb-4">
               <TouchableOpacity onPress={goToPrevMonth} className="w-9 h-9 justify-center items-center">

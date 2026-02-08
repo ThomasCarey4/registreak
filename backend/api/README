@@ -1,0 +1,3 @@
+install poetry with curl -sSL https://install.python-poetry.org | python3 -
+
+run app with poetry run python run.py
