@@ -6,11 +6,23 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useAuth } from "@/context/auth-context";
+import LecturesScreen from "./lectures";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { user } = useAuth();
 
+  // If user is an instructor, render the Lectures screen full-screen (no bottom tabs)
+  if (user?.is_staff) {
+    return (
+      <SafeAreaView style={{ flex: 1 }}>
+        <LecturesScreen />
+      </SafeAreaView>
+    );
+  }
+
+  // Otherwise render the regular tab layout for students
   return (
     <Tabs
       screenOptions={{
@@ -45,15 +57,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="trophy.fill" color={color} />,
         }}
       />
-      {user?.is_staff && (
-        <Tabs.Screen
-          name="lectures"
-          options={{
-            title: "Lectures",
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="book.fill" color={color} />,
-          }}
-        />
-      )}
       <Tabs.Screen
         name="explore"
         options={{
