@@ -155,7 +155,7 @@ export default function LecturesScreen() {
 
             <View className="mt-6 items-center">
               <View className="rounded-2xl bg-white p-4">
-                <QRCode value={`paw://attend?code=${lecture.code}`} size={180} />
+                <QRCode value={`paw://(tabs)?code=${lecture.code}`} size={180} />
               </View>
             </View>
             <View className="items-center px-5 pb-6 pt-8">
