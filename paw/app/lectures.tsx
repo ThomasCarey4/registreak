@@ -5,6 +5,7 @@ import { apiService } from "@/services/api";
 import { themeColors } from "@/constants/colors";
 import { useColorScheme } from "nativewind";
 import { Redirect } from "expo-router";
+import QRCode from "react-native-qrcode-svg";
 
 interface Lecture {
   lecture_id: number;
@@ -13,13 +14,6 @@ interface Lecture {
   start_time: string;
   end_time: string;
   code: string;
-}
-
-interface CodeResponse {
-  success: boolean;
-  lectures?: Lecture[];
-  message?: string;
-  error?: string;
 }
 
 export default function LecturesScreen() {
@@ -75,7 +69,7 @@ export default function LecturesScreen() {
       await logout();
       setSessionEnded(true);
       setLectures([]);
-    } catch (err) {
+    } catch {
       setError("Failed to end session");
     }
   };
@@ -158,7 +152,23 @@ export default function LecturesScreen() {
                   </View>
                 ))}
               </View>
-              <View className="flex-row items-center gap-2">
+
+              <View className="mt-4 items-center">
+                <View className="rounded-xl bg-white p-3">
+                  <QRCode
+                    value={`paw://attend?code=${lecture.code}`}
+                    size={180}
+                    backgroundColor="white"
+                    logo={require("@/assets/images/icon.png")}
+                    logoSize={40}
+                    logoBackgroundColor="white"
+                    logoBorderRadius={8}
+                  />
+                </View>
+                <Text className="text-foreground/50 mt-2 text-xs">Scan this QR code to mark attendance</Text>
+              </View>
+
+              <View className="mt-4 flex-row items-center gap-2">
                 <View className="h-1.5 w-1.5 rounded-full bg-success" />
                 <Text className="text-foreground/60 text-xs">Auto-refreshing every 30 seconds</Text>
               </View>
