@@ -1,228 +1,68 @@
-import { useAuth } from "@/contexts/auth-context";
-import { Fonts, LeedsRed, LeedsAlert } from "@/constants/theme";
+import React, { useState } from "react";
+import { Alert, Pressable, TextInput, View, Text } from "react-native";
+import { useAuth } from "@/context/auth-context";
 import { themeColors } from "@/constants/colors";
 import { useColorScheme } from "nativewind";
-import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  Text,
-  TextInput,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
-  const { signIn } = useAuth();
-  const router = useRouter();
+  const { login } = useAuth();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { colorScheme } = useColorScheme();
   const colors = themeColors[colorScheme ?? "light"];
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const passwordRef = useRef<TextInput>(null);
-
-  const handleLogin = async () => {
-    Keyboard.dismiss();
-    setError(null);
-    setLoading(true);
-    try {
-      await signIn(username.trim(), password);
-    } catch (e: any) {
-      setError(e.message ?? "Login failed");
-    } finally {
-      setLoading(false);
+  async function submit() {
+    if (!username.trim() || !password.trim()) {
+      Alert.alert("Error", "Please enter username and password");
+      return;
     }
-  };
+    try {
+      setIsLoading(true);
+      await login(username, password);
+    } catch (err) {
+      Alert.alert("Login failed", String(err));
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1, justifyContent: "center", paddingHorizontal: 28 }}
+    <View className="flex-1 justify-center bg-background p-6">
+      <View className="w-full items-center gap-3">
+        <Text className="mb-1 text-[56px]">🐱</Text>
+        <Text className="text-foreground text-[28px] font-bold">Lucky Cat</Text>
+        <Text className="text-subtle mb-4 text-[15px]">Sign in to mark attendance</Text>
+
+        <TextInput
+          value={username}
+          onChangeText={setUsername}
+          className="w-full rounded-xl border border-divider bg-card p-3.5 text-base text-foreground"
+          autoCapitalize="none"
+          placeholder="Username or Student ID"
+          placeholderTextColor={colors.subtle}
+          editable={!isLoading}
+        />
+
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          className="w-full rounded-xl border border-divider bg-card p-3.5 text-base text-foreground"
+          secureTextEntry
+          placeholder="Password"
+          placeholderTextColor={colors.subtle}
+          editable={!isLoading}
+          onSubmitEditing={submit}
+        />
+
+        <Pressable
+          onPress={submit}
+          disabled={isLoading}
+          className="mt-2 w-full items-center rounded-xl p-4 bg-foreground"
         >
-          {/* Header */}
-          <View style={{ alignItems: "center", marginBottom: 48 }}>
-            <Text
-              style={{
-                fontSize: 28,
-                fontWeight: "700",
-                color: colors.foreground,
-                fontFamily: Fonts.rounded,
-                letterSpacing: -0.5,
-              }}
-            >
-              Welcome back
-            </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                color: colors.subtle,
-                marginTop: 6,
-                fontFamily: Fonts.sans,
-              }}
-            >
-              Sign in to continue
-            </Text>
-          </View>
-
-          {/* Error */}
-          {error && (
-            <View
-              style={{
-                backgroundColor: LeedsRed.faded,
-                borderWidth: 1,
-                borderColor: LeedsRed.pastel,
-                borderRadius: 12,
-                padding: 14,
-                marginBottom: 20,
-              }}
-            >
-              <Text
-                style={{
-                  color: LeedsAlert.error,
-                  fontSize: 14,
-                  fontFamily: Fonts.sans,
-                  textAlign: "center",
-                }}
-              >
-                {error}
-              </Text>
-            </View>
-          )}
-
-          {/* Username */}
-          <Text
-            style={{
-              fontSize: 13,
-              fontWeight: "600",
-              color: colors.subtle,
-              marginBottom: 6,
-              fontFamily: Fonts.sans,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-            }}
-          >
-            Username
-          </Text>
-          <TextInput
-            value={username}
-            onChangeText={setUsername}
-            placeholder="Username or Student ID"
-            placeholderTextColor={colors.subtle}
-            autoCapitalize="none"
-            autoCorrect={false}
-            textContentType="username"
-            returnKeyType="next"
-            onSubmitEditing={() => passwordRef.current?.focus()}
-            editable={!loading}
-            style={{
-              height: 52,
-              borderWidth: 1,
-              borderColor: colors.divider,
-              borderRadius: 12,
-              paddingHorizontal: 16,
-              fontSize: 16,
-              color: colors.foreground,
-              backgroundColor: colors.card,
-              fontFamily: Fonts.sans,
-              marginBottom: 18,
-            }}
-          />
-
-          {/* Password */}
-          <Text
-            style={{
-              fontSize: 13,
-              fontWeight: "600",
-              color: colors.subtle,
-              marginBottom: 6,
-              fontFamily: Fonts.sans,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-            }}
-          >
-            Password
-          </Text>
-          <TextInput
-            ref={passwordRef}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="••••••••"
-            placeholderTextColor={colors.subtle}
-            secureTextEntry
-            textContentType="password"
-            returnKeyType="done"
-            onSubmitEditing={handleLogin}
-            editable={!loading}
-            style={{
-              height: 52,
-              borderWidth: 1,
-              borderColor: colors.divider,
-              borderRadius: 12,
-              paddingHorizontal: 16,
-              fontSize: 16,
-              color: colors.foreground,
-              backgroundColor: colors.card,
-              fontFamily: Fonts.sans,
-              marginBottom: 28,
-            }}
-          />
-
-          {/* Sign In button */}
-          <Pressable
-            onPress={handleLogin}
-            disabled={loading}
-            style={({ pressed }) => ({
-              height: 52,
-              borderRadius: 12,
-              backgroundColor: pressed ? colors.tint + "dd" : colors.tint,
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: loading ? 0.7 : 1,
-            })}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text
-                style={{
-                  color: "#ffffff",
-                  fontSize: 17,
-                  fontWeight: "700",
-                  fontFamily: Fonts.rounded,
-                }}
-              >
-                Sign In
-              </Text>
-            )}
-          </Pressable>
-
-          {/* Register link */}
-          <View style={{ alignItems: "center", marginTop: 24 }}>
-            <Pressable onPress={() => router.push("/(auth)/register")}>
-              <Text
-                style={{
-                  fontSize: 15,
-                  color: colors.subtle,
-                  fontFamily: Fonts.sans,
-                }}
-              >
-                Don&apos;t have an account? <Text style={{ color: colors.foreground, fontWeight: "600" }}>Sign Up</Text>
-              </Text>
-            </Pressable>
-          </View>
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
-    </SafeAreaView>
+          <Text className="text-[17px] font-semibold text-background">{isLoading ? "Signing in..." : "Sign In"}</Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }

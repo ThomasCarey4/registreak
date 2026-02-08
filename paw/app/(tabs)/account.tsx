@@ -19,7 +19,7 @@ export default function AccountScreen() {
           <Text className="text-[20px] font-semibold text-foreground">{user?.username ?? "—"}</Text>
         </View>
 
-        <Pressable onPress={logout} className="items-center rounded-xl bg-tint py-4 active:opacity-80 bg-foreground">
+        <Pressable onPress={logout} className="items-center rounded-xl py-4 active:opacity-80 bg-foreground">
           <Text className="text-background text-[17px] font-semibold">Sign Out</Text>
         </Pressable>
       </View>

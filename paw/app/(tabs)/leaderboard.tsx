@@ -1,8 +1,5 @@
 import { BottomFade, useBottomFade } from "@/components/bottom-fade";
-import { LeedsRed } from "@/constants/theme";
-import { themeColors } from "@/constants/colors";
 import { useAuth } from "@/context/auth-context";
-import { useColorScheme } from "nativewind";
 import { apiService } from "@/services/api";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
@@ -70,65 +67,33 @@ const MEDALS: Record<number, string> = {
   3: "🥉",
 };
 
-function StreakBadge({ streak, isDark }: { streak: number; isDark: boolean }) {
+function StreakBadge({ streak }: { streak: number }) {
   if (streak <= 0) return null;
 
   const isHot = streak >= 7;
   const isOnFire = streak >= 14;
 
-  const bgColor = isDark
-    ? isOnFire
-      ? "rgba(145,0,0,0.35)"
-      : isHot
-        ? "rgba(199,0,0,0.25)"
-        : "rgba(255,78,54,0.15)"
-    : isOnFire
-      ? LeedsRed.faded
-      : isHot
-        ? "rgba(199,0,0,0.1)"
-        : "rgba(255,78,54,0.08)";
+  const tierClass = isOnFire
+    ? "bg-leeds-red-faded dark:bg-[rgba(145,0,0,0.35)] border-[rgba(145,0,0,0.2)] dark:border-[rgba(255,138,122,0.3)]"
+    : isHot
+      ? "bg-[rgba(199,0,0,0.1)] dark:bg-[rgba(199,0,0,0.25)] border-[rgba(199,0,0,0.15)] dark:border-[rgba(255,78,54,0.25)]"
+      : "bg-[rgba(255,78,54,0.08)] dark:bg-[rgba(255,78,54,0.15)] border-[rgba(255,78,54,0.15)] dark:border-[rgba(255,78,54,0.18)]";
 
-  const textColor = isDark
-    ? isOnFire
-      ? LeedsRed.pastel
-      : isHot
-        ? LeedsRed.bright
-        : "rgba(255,138,122,0.9)"
-    : isOnFire
-      ? LeedsRed.dark
-      : isHot
-        ? LeedsRed.base
-        : LeedsRed.bright;
-
-  const borderColor = isDark
-    ? isOnFire
-      ? "rgba(255,138,122,0.3)"
-      : isHot
-        ? "rgba(255,78,54,0.25)"
-        : "rgba(255,78,54,0.18)"
-    : isOnFire
-      ? "rgba(145,0,0,0.2)"
-      : isHot
-        ? "rgba(199,0,0,0.15)"
-        : "rgba(255,78,54,0.15)";
+  const textClass = isOnFire
+    ? "text-leeds-red-dark dark:text-leeds-red-pastel"
+    : isHot
+      ? "text-leeds-red dark:text-leeds-red-bright"
+      : "text-leeds-red-bright dark:text-[rgba(255,138,122,0.9)]";
 
   return (
-    <View
-      className="flex-row items-center gap-0.5 px-2 py-1 rounded-full"
-      style={{ backgroundColor: bgColor, borderWidth: 1, borderColor }}
-    >
+    <View className={`flex-row items-center gap-0.5 px-2 py-1 rounded-full border ${tierClass}`}>
       <Text className="text-xs">🔥</Text>
-      <Text className="font-bold text-xs" style={{ color: textColor }}>
-        {streak}
-      </Text>
+      <Text className={`font-bold text-xs ${textClass}`}>{streak}</Text>
     </View>
   );
 }
 
 export default function LeaderboardScreen() {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const colors = themeColors[colorScheme ?? "light"];
   const { user } = useAuth();
 
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
@@ -219,16 +184,7 @@ export default function LeaderboardScreen() {
                 return (
                   <View
                     key={student.id}
-                    className="flex-row items-center rounded-2xl p-3.5 bg-card"
-                    style={{
-                      borderWidth: isCurrentUser ? 1.5 : 0,
-                      borderColor: isCurrentUser ? colors.tint : "transparent",
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 1 },
-                      shadowOpacity: isDark ? 0.2 : 0.04,
-                      shadowRadius: 6,
-                      elevation: 2,
-                    }}
+                    className={`flex-row items-center rounded-2xl p-3.5 bg-card shadow-md shadow-black/[0.04] dark:shadow-black/20 ${isCurrentUser ? "border-[1.5px] border-tint" : ""}`}
                   >
                     {/* Rank / Medal */}
                     <View className="w-9 items-center mr-3">
@@ -248,19 +204,14 @@ export default function LeaderboardScreen() {
                         {student.name}
                       </Text>
                       {isCurrentUser && (
-                        <View className="px-1.5 py-0.5 rounded" style={{ backgroundColor: colors.tint }}>
-                          <Text
-                            className="text-[9px] font-extrabold tracking-wide"
-                            style={{ color: isDark ? colors.background : "#ffffff" }}
-                          >
-                            YOU
-                          </Text>
+                        <View className="px-1.5 py-0.5 rounded bg-tint">
+                          <Text className="text-[9px] font-extrabold tracking-wide text-background">YOU</Text>
                         </View>
                       )}
                     </View>
 
                     {/* Streak */}
-                    <StreakBadge streak={student.streak} isDark={isDark} />
+                    <StreakBadge streak={student.streak} />
                   </View>
                 );
               })}
@@ -277,18 +228,7 @@ export default function LeaderboardScreen() {
                 <View className="flex-1 h-[1px] bg-divider" />
               </View>
 
-              <View
-                className="flex-row items-center rounded-2xl p-4 bg-background"
-                style={{
-                  borderWidth: 1.5,
-                  borderColor: colors.tint,
-                  shadowColor: colors.tint,
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 8,
-                  elevation: 4,
-                }}
-              >
+              <View className="flex-row items-center rounded-2xl p-4 bg-background border-[1.5px] border-tint shadow-lg shadow-tint/15">
                 {/* Rank */}
                 <View className="w-9 items-center mr-3">
                   <Text className="text-[17px] font-bold text-tint">{currentUserItem.rank}</Text>
@@ -299,18 +239,13 @@ export default function LeaderboardScreen() {
                   <Text className="text-[15px] font-bold text-foreground" numberOfLines={1}>
                     {currentUserItem.student.name}
                   </Text>
-                  <View className="px-1.5 py-0.5 rounded" style={{ backgroundColor: colors.tint }}>
-                    <Text
-                      className="text-[9px] font-extrabold tracking-wide"
-                      style={{ color: isDark ? colors.background : "#ffffff" }}
-                    >
-                      YOU
-                    </Text>
+                  <View className="px-1.5 py-0.5 rounded bg-tint">
+                    <Text className="text-[9px] font-extrabold tracking-wide text-background">YOU</Text>
                   </View>
                 </View>
 
                 {/* Streak */}
-                <StreakBadge streak={currentUserItem.student.streak} isDark={isDark} />
+                <StreakBadge streak={currentUserItem.student.streak} />
               </View>
             </View>
           )}

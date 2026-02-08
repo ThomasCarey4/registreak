@@ -7,7 +7,7 @@ import * as Linking from "expo-linking";
 
 import { useColorScheme } from "nativewind";
 import { AuthProvider, useAuth } from "@/context/auth-context";
-import LoginScreen from "@/app/login";
+import LoginScreen from "@/app/(auth)/login";
 import { ActivityIndicator, View } from "react-native";
 import { useEffect } from "react";
 
