@@ -192,8 +192,10 @@ export default function StreaksScreen() {
           if (!cancelled) setLoadingAttendance(false);
         }
       })();
-      return () => { cancelled = true; };
-    }, [user?.student_id])
+      return () => {
+        cancelled = true;
+      };
+    }, [user?.student_id]),
   );
 
   const overallRate = useMemo(() => calculateOverallRate(attendanceData), [attendanceData]);
@@ -421,9 +423,18 @@ export default function StreaksScreen() {
                   ‹
                 </Text>
               </TouchableOpacity>
-              <Text className={`text-[17px] font-semibold ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
-                {MONTHS[currentMonth]} {currentYear}
-              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setCurrentMonth(today.getMonth());
+                  setCurrentYear(today.getFullYear());
+                  setSelectedDate(formatDateKey(today.getFullYear(), today.getMonth(), today.getDate()));
+                }}
+                activeOpacity={0.6}
+              >
+                <Text className={`text-[17px] font-semibold ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
+                  {MONTHS[currentMonth]} {currentYear}
+                </Text>
+              </TouchableOpacity>
               <TouchableOpacity onPress={goToNextMonth} className="w-9 h-9 justify-center items-center">
                 <Text className={`text-[28px] font-light leading-8 ${isDark ? "text-[#ECEDEE]" : "text-[#374151]"}`}>
                   ›
