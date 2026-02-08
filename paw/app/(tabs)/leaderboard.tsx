@@ -1,3 +1,4 @@
+import { BottomFade, useBottomFade } from "@/components/bottom-fade";
 import { Colors, LeedsRed } from "@/constants/theme";
 import rawData from "@/data/leaderboard-data.json";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -58,26 +59,55 @@ const MEDALS: Record<number, string> = {
   3: "🥉",
 };
 
-function StreakBadge({ streak }: { streak: number }) {
+function StreakBadge({ streak, isDark }: { streak: number; isDark: boolean }) {
   if (streak <= 0) return null;
 
   const isHot = streak >= 7;
   const isOnFire = streak >= 14;
 
+  const bgColor = isDark
+    ? isOnFire
+      ? "rgba(145, 0, 0, 0.35)"
+      : isHot
+        ? "rgba(199, 0, 0, 0.25)"
+        : "rgba(255, 78, 54, 0.15)"
+    : isOnFire
+      ? LeedsRed.faded
+      : isHot
+        ? "rgba(199, 0, 0, 0.1)"
+        : "rgba(255, 78, 54, 0.08)";
+
+  const textColor = isDark
+    ? isOnFire
+      ? LeedsRed.pastel
+      : isHot
+        ? LeedsRed.bright
+        : "rgba(255, 138, 122, 0.9)"
+    : isOnFire
+      ? LeedsRed.dark
+      : isHot
+        ? LeedsRed.base
+        : LeedsRed.bright;
+
+  const borderColor = isDark
+    ? isOnFire
+      ? "rgba(255, 138, 122, 0.3)"
+      : isHot
+        ? "rgba(255, 78, 54, 0.25)"
+        : "rgba(255, 78, 54, 0.18)"
+    : isOnFire
+      ? "rgba(145, 0, 0, 0.2)"
+      : isHot
+        ? "rgba(199, 0, 0, 0.15)"
+        : "rgba(255, 78, 54, 0.15)";
+
   return (
     <View
       className="flex-row items-center gap-0.5 px-2 py-1 rounded-full"
-      style={{
-        backgroundColor: isOnFire ? LeedsRed.faded : isHot ? "rgba(199, 0, 0, 0.1)" : "rgba(255, 78, 54, 0.08)",
-      }}
+      style={{ backgroundColor: bgColor, borderWidth: 1, borderColor }}
     >
       <Text className="text-xs">🔥</Text>
-      <Text
-        className="font-bold text-xs"
-        style={{
-          color: isOnFire ? LeedsRed.dark : isHot ? LeedsRed.base : LeedsRed.bright,
-        }}
-      >
+      <Text className="font-bold text-xs" style={{ color: textColor }}>
         {streak}
       </Text>
     </View>
@@ -101,10 +131,17 @@ export default function LeaderboardScreen() {
     [displayItems],
   );
 
+  const { opacity: fadeOpacity, onScroll: onFadeScroll } = useBottomFade();
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.surfaceBg }}>
       <SafeAreaView className="flex-1" edges={["top"]}>
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          onScroll={onFadeScroll}
+          scrollEventThrottle={16}
+        >
           {/* Header */}
           <View className="px-5 pt-5 pb-2">
             <Text style={{ fontSize: 32, fontWeight: "bold", marginBottom: 4, color: colors.text }}>Leaderboard</Text>
@@ -169,7 +206,7 @@ export default function LeaderboardScreen() {
                   </View>
 
                   {/* Streak */}
-                  <StreakBadge streak={student.streak} />
+                  <StreakBadge streak={student.streak} isDark={isDark} />
                 </View>
               );
             })}
@@ -226,7 +263,7 @@ export default function LeaderboardScreen() {
                 </View>
 
                 {/* Streak */}
-                <StreakBadge streak={currentUserItem.student.streak} />
+                <StreakBadge streak={currentUserItem.student.streak} isDark={isDark} />
               </View>
             </View>
           )}
@@ -234,6 +271,7 @@ export default function LeaderboardScreen() {
           {/* Bottom padding when user is in top 10 */}
           {!currentUserItem && <View className="h-10" />}
         </ScrollView>
+        <BottomFade opacity={fadeOpacity} />
       </SafeAreaView>
     </View>
   );

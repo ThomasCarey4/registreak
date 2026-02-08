@@ -1,5 +1,6 @@
+import * as Haptics from "expo-haptics";
 import { useEffect } from "react";
-import { Dimensions, StyleSheet, View } from "react-native";
+import { Dimensions, Modal, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   runOnJS,
@@ -60,6 +61,11 @@ export function SuccessOverlay({ visible, onComplete }: SuccessOverlayProps) {
       // Icon container scale — bouncy pop
       iconScale.value = withDelay(450, withSpring(1, { damping: 8, stiffness: 160, mass: 0.7 }));
 
+      // Haptic feedback — timed with the first ripple pulse
+      const hapticTimer = setTimeout(() => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }, 700);
+
       // Ripple 1 — starts right after tick lands (from circle outward)
       ring1Scale.value = withDelay(700, withTiming(3.5, { duration: 900, easing: Easing.out(Easing.quad) }));
       ring1Opacity.value = withDelay(
@@ -100,7 +106,10 @@ export function SuccessOverlay({ visible, onComplete }: SuccessOverlayProps) {
         });
       }, 3000);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(hapticTimer);
+      };
     }
   }, [visible]);
 
@@ -144,44 +153,46 @@ export function SuccessOverlay({ visible, onComplete }: SuccessOverlayProps) {
   if (!visible) return null;
 
   return (
-    <Animated.View style={[styles.overlay, overlayStyle]}>
-      {/* Background */}
-      <View style={styles.bgLayer1} />
-      <View style={styles.bgLayer2} />
+    <Modal visible={visible} transparent animationType="none" statusBarTranslucent>
+      <Animated.View style={[styles.overlay, overlayStyle]}>
+        {/* Background */}
+        <View style={styles.bgLayer1} />
+        <View style={styles.bgLayer2} />
 
-      <View style={styles.content}>
-        {/* Circle + tick + ripples all centered together */}
-        <View style={styles.iconArea}>
-          {/* Ripple rings — same center as the circle/tick */}
-          <Animated.View style={[styles.ripple, ring1Style]} />
-          <Animated.View style={[styles.ripple, ring2Style]} />
-          <Animated.View style={[styles.ripple, ring3Style]} />
+        <View style={styles.content}>
+          {/* Circle + tick + ripples all centered together */}
+          <View style={styles.iconArea}>
+            {/* Ripple rings — same center as the circle/tick */}
+            <Animated.View style={[styles.ripple, ring1Style]} />
+            <Animated.View style={[styles.ripple, ring2Style]} />
+            <Animated.View style={[styles.ripple, ring3Style]} />
 
-          {/* Circle background */}
-          <Animated.View style={[styles.circleOuter, circleStyle]}>
-            <View style={styles.circleGlow} />
-            <View style={styles.circleInner}>
-              {/* Checkmark SVG */}
-              <Animated.View style={iconContainerStyle}>
-                <Svg width={56} height={56} viewBox="0 0 56 56" fill="none">
-                  <Path
-                    d="M15 28.5L24 37.5L41 18.5"
-                    stroke="white"
-                    strokeWidth={4.5}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    fill="none"
-                  />
-                </Svg>
-              </Animated.View>
-            </View>
-          </Animated.View>
+            {/* Circle background */}
+            <Animated.View style={[styles.circleOuter, circleStyle]}>
+              <View style={styles.circleGlow} />
+              <View style={styles.circleInner}>
+                {/* Checkmark SVG */}
+                <Animated.View style={iconContainerStyle}>
+                  <Svg width={56} height={56} viewBox="0 0 56 56" fill="none">
+                    <Path
+                      d="M15 28.5L24 37.5L41 18.5"
+                      stroke="white"
+                      strokeWidth={4.5}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill="none"
+                    />
+                  </Svg>
+                </Animated.View>
+              </View>
+            </Animated.View>
+          </View>
+
+          {/* Text */}
+          <Animated.Text style={[styles.title, titleStyle]}>Attendance Recorded</Animated.Text>
         </View>
-
-        {/* Text */}
-        <Animated.Text style={[styles.title, titleStyle]}>Attendance Recorded</Animated.Text>
-      </View>
-    </Animated.View>
+      </Animated.View>
+    </Modal>
   );
 }
 
