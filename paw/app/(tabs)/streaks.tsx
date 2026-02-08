@@ -45,57 +45,11 @@ function formatDateKey(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-function formatDisplayDate(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
 
-function calculateStreak(data: Record<string, DayData>): number {
-  const dates = Object.keys(data).sort().reverse();
-  let streak = 0;
 
-  for (const date of dates) {
-    const dayLectures = data[date].lectures;
-    // Skip days with only scheduled (null) lectures
-    if (dayLectures.every((l) => l.attended === null)) continue;
-    const hasAttended = dayLectures.some((l) => l.attended === true);
 
-    if (hasAttended) {
-      streak++;
-    } else {
-      break;
-    }
-  }
 
-  return streak;
-}
 
-function calculateBestStreak(data: Record<string, DayData>): number {
-  const dates = Object.keys(data).sort();
-  let best = 0;
-  let current = 0;
-
-  for (const date of dates) {
-    const lectures = data[date].lectures;
-    // Skip days with only scheduled (null) lectures
-    if (lectures.every((l) => l.attended === null)) continue;
-    const hasAttended = lectures.some((l) => l.attended === true);
-    if (hasAttended) {
-      current++;
-      best = Math.max(best, current);
-    } else {
-      current = 0;
-    }
-  }
-
-  return best;
-}
 
 function calculateOverallRate(data: Record<string, DayData>): number {
   let attended = 0;
@@ -302,14 +256,17 @@ export default function StreaksScreen() {
             >
               {/* Main streak display */}
               <View className="p-5 items-center">
-                <RollingNumber
-                  value={streak}
-                  animate={showCelebration}
-                  fontSize={56}
-                  color={isDark ? "#ECEDEE" : "#374151"}
-                  fontWeight="800"
-                  delay={300}
-                />
+                <View className="flex-row items-center">
+                  <RollingNumber
+                    value={streak}
+                    animate={showCelebration}
+                    fontSize={56}
+                    color={isDark ? "#ECEDEE" : "#374151"}
+                    fontWeight="800"
+                    delay={300}
+                  />
+                  <Text style={{ fontSize: 56, marginLeft: 8 }}>{streak === 1 ? "" : "🔥"}</Text>
+                </View>
 
                 <Text
                   className="font-semibold uppercase tracking-[3px]"
