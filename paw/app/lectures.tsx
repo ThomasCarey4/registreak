@@ -170,7 +170,7 @@ export default function LecturesScreen() {
 
               <View className="mt-4 flex-row items-center gap-2">
                 <View className="h-1.5 w-1.5 rounded-full bg-success" />
-                <Text className="text-foreground/60 text-xs">Auto-refreshing every 30 seconds</Text>
+                <Text className="text-foreground/60 text-xs">Auto-refreshing every 30 secondst </Text>
               </View>
             </View>
           </View>

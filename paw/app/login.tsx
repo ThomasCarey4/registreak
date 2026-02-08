@@ -58,10 +58,9 @@ export default function LoginScreen() {
         <Pressable
           onPress={submit}
           disabled={isLoading}
-          style={{ backgroundColor: colors.tint, opacity: isLoading ? 0.6 : 1 }}
-          className="mt-2 w-full items-center rounded-xl p-4"
+          className="mt-2 w-full items-center rounded-xl p-4 bg-foreground"
         >
-          <Text className="text-[17px] font-semibold text-white">{isLoading ? "Signing in..." : "Sign In"}</Text>
+          <Text className="text-[17px] font-semibold text-background">{isLoading ? "Signing in..." : "Sign In"}</Text>
         </Pressable>
       </View>
     </View>

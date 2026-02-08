@@ -19,17 +19,8 @@ export default function AccountScreen() {
           <Text className="text-[20px] font-semibold text-foreground">{user?.username ?? "—"}</Text>
         </View>
 
-        <Pressable
-          onPress={logout}
-          style={({ pressed }) => ({
-            backgroundColor: colors.tint,
-            borderRadius: 12,
-            paddingVertical: 16,
-            alignItems: "center",
-            opacity: pressed ? 0.8 : 1,
-          })}
-        >
-          <Text className="text-white text-[17px] font-semibold">Sign Out</Text>
+        <Pressable onPress={logout} className="items-center rounded-xl bg-tint py-4 active:opacity-80 bg-foreground">
+          <Text className="text-background text-[17px] font-semibold">Sign Out</Text>
         </Pressable>
       </View>
     </SafeAreaView>
