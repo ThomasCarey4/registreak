@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { StyleSheet, ScrollView, View, RefreshControl, ActivityIndicator, Pressable } from 'react-native';
+import { StyleSheet, ScrollView, View, RefreshControl, ActivityIndicator, Pressable, Image } from 'react-native';
 import { useAuth } from '@/context/auth-context';
 import { apiService } from '@/services/api';
 import { ThemedText } from '@/components/themed-text';
@@ -7,6 +7,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
 import { Redirect } from 'expo-router';
+import QRCode from 'react-native-qrcode-svg';
 
 interface Lecture {
   lecture_id: number;
@@ -15,13 +16,6 @@ interface Lecture {
   start_time: string;
   end_time: string;
   code: string;
-}
-
-interface CodeResponse {
-  success: boolean;
-  lectures?: Lecture[];
-  message?: string;
-  error?: string;
 }
 
 export default function LecturesScreen() {
@@ -37,15 +31,15 @@ export default function LecturesScreen() {
     try {
       setError('');
       const response = await apiService.getVerificationCode();
-      
+
       if (response && response.lectures) {
         setLectures(response.lectures);
       } else {
         setLectures([]);
         setError(response?.message || response?.error || 'No active lectures found');
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch lectures');
+    } catch {
+      setError('Failed to fetch lectures');
       setLectures([]);
     } finally {
       setLoading(false);
@@ -77,7 +71,7 @@ export default function LecturesScreen() {
       await logout();
       setSessionEnded(true);
       setLectures([]);
-    } catch (err) {
+    } catch {
       setError('Failed to end session');
     }
   };
@@ -129,7 +123,7 @@ export default function LecturesScreen() {
           <View style={styles.emptyContainer}>
             <ThemedText style={styles.emptyText}>No active lectures</ThemedText>
             <ThemedText style={styles.emptySubtext}>
-              You don't have any lectures scheduled right now
+              You don&apos;t have any lectures scheduled right now
             </ThemedText>
           </View>
         )}
@@ -154,6 +148,24 @@ export default function LecturesScreen() {
                   </View>
                 ))}
               </View>
+
+              <View style={styles.qrContainer}>
+                <View style={styles.qrWrapper}>
+                  <QRCode
+                    value={`paw://attend?code=${lecture.code}`}
+                    size={180}
+                    backgroundColor="white"
+                    logo={require('@/assets/images/icon.png')}
+                    logoSize={40}
+                    logoBackgroundColor="white"
+                    logoBorderRadius={8}
+                  />
+                </View>
+                <ThemedText style={styles.qrLabel}>
+                  Scan this QR code to mark attendance
+                </ThemedText>
+              </View>
+
               <View style={styles.autoRefreshIndicator}>
                 <View style={styles.pulseDot} />
                 <ThemedText style={styles.autoRefreshText}>
@@ -280,6 +292,27 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'Courier New',
     letterSpacing: 2,
+  },
+  qrContainer: {
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 16,
+  },
+  qrWrapper: {
+    padding: 16,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  qrLabel: {
+    fontSize: 12,
+    opacity: 0.6,
+    marginTop: 12,
+    textAlign: 'center',
   },
   autoRefreshIndicator: {
     flexDirection: 'row',
