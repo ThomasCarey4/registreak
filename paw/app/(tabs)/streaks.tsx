@@ -261,10 +261,8 @@ export default function StreaksScreen() {
 
   const getProgressColor = (attended: number, total: number): string => {
     if (total === 0) return "transparent";
-    const ratio = attended / total;
-    if (ratio >= 1) return "#4CAF50";
-    if (ratio >= 0.5) return "#FF9800";
-    return "#F44336";
+    if (attended >= total) return "#4CAF50";
+    return "#FF9800";
   };
 
   const { opacity: fadeOpacity, onScroll: onFadeScroll } = useBottomFade();

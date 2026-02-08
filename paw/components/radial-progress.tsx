@@ -99,10 +99,11 @@ export function RadialProgress({
     const outerR = radius + strokeWidth / 2;
     const innerR = radius - strokeWidth / 2;
 
-    const arcs = segments.map((attended, i) => {
+    const attendedCount = segments.filter(Boolean).length;
+    const arcs = segments.map((_, i) => {
       const start = startOffset + i * (segmentAngle + gapAngle);
       const end = start + segmentAngle;
-      return { attended, start, end };
+      return { attended: i < attendedCount, start, end };
     });
 
     return (
