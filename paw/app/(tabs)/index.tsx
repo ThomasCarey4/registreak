@@ -153,7 +153,7 @@ export default function AttendScreen() {
         visible={showSuccess}
         onFadeStart={() => {
           handleReset();
-          router.push("/(tabs)/streaks");
+          router.push({ pathname: "/(tabs)/streaks", params: { celebrate: "true" } });
         }}
         onComplete={() => {
           setShowSuccess(false);
